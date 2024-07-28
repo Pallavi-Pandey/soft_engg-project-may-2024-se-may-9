@@ -1,0 +1,365 @@
+openapi: 3.0.0
+info:
+  title: Course API
+  description: API for managing courses, weekly content, assignments, and related student interactions.
+  version: 1.0.0
+paths:
+  /course/{course_id}:
+    get:
+      summary: Get Course Weeks
+      description: Returns a list of week IDs for a specific course.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+      responses:
+        '200':
+          description: A list of week IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /course/{course_id}/{week_id}:
+    get:
+      summary: Get Weekly Content
+      description: Returns a list of video IDs for a specific week of a course.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+      responses:
+        '200':
+          description: A list of video IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /course_assignment/{course_id}/{week_id}:
+    get:
+      summary: Get Weekly Assignment
+      description: Returns assignment IDs for a specific week.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+      responses:
+        '200':
+          description: Data for assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /course_assignment/{week_id}/{assignment_id}:
+    post:
+      summary: Submit Assignment Answers
+      description: Submits answers for a specific assignment.
+      parameters:
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+        - in: path
+          name: assignment_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the assignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Answers submitted
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /summary/{course_id}/{week_id}:
+    get:
+      summary: Get Weekly Summary
+      description: Provides an AI-generated summary of a week.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+      responses:
+        '200':
+          description: AI-generated summary of the week
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /summary/{course_id}/{week_id}/{video_id}:
+    get:
+      summary: Get Lecture Summary
+      description: Provides an AI-generated summary of a specific lecture.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+        - in: path
+          name: video_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the video
+      responses:
+        '200':
+          description: AI-generated summary of the lecture
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /mock_assignment/{course_id}/{week_id}:
+    get:
+      summary: Get Weekly Mock Questions
+      description: Generates mock questions for all lectures in a week.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+      responses:
+        '200':
+          description: AI-generated mock questions for the week
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    question_text:
+                      type: string
+                    options:
+                      type: array
+                      items:
+                        type: string
+
+  /mock_assignment/{course_id}:
+    get:
+      summary: Get Course Mock Questions
+      description: Generates mock questions for all lectures in a course.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+      responses:
+        '200':
+          description: AI-generated mock questions for the course
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    question_text:
+                      type: string
+                    options:
+                      type: array
+                      items:
+                        type: string
+
+  /mock_assignment:
+    post:
+      summary: Get Mock Questions for Multiple Courses
+      description: Generates mock questions for multiple courses.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: AI-generated mock questions for the specified courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    course_id:
+                      type: integer
+                    questions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          question_text:
+                            type: string
+                          options:
+                            type: array
+                            items:
+                              type: string
+
+  /weak_concepts/{course_id}:
+    get:
+      summary: Get Weak Concepts
+      description: Lists topics where the student hasn't scored well.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+      responses:
+        '200':
+          description: List of topics of weak concepts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /prog_hint/{course_id}/{week_id}/{content_id}:
+    post:
+      summary: Get Programming Hints
+      description: Provides hints based on the user's submitted code.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+        - in: path
+          name: content_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Hints based on the submitted code
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /alter_sol/{course_id}/{week_id}/{content_id}:
+    get:
+      summary: Get Alternative Solutions
+      description: Provides AI-generated alternative solutions for a programming assignment.
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+        - in: path
+          name: content_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the content
+      responses:
+        '200':
+          description: AI-generated alternative solutions
+          content:
+            application/json:
+              schema:
+                type: string
