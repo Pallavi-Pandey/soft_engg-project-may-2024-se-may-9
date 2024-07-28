@@ -3,11 +3,56 @@ info:
   title: Course API
   description: API for managing courses, weekly content, assignments, and related student interactions.
   version: 1.0.0
+
 paths:
+  /home/{user_id}:
+    get:
+      tags:
+        - User
+      summary: User Details
+      description: Provides all the user specific details (student details, enrolled courses, completed courses, etc).
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the student
+      responses:
+        '200':
+          description: Dictionary containing user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    description: The unique identifier of the user
+                  name:
+                    type: string
+                    description: The name of the user
+                  email:
+                    type: string
+                    description: The email address of the user
+                  enrolled_courses:
+                    type: array
+                    items:
+                      type: string
+                    description: A list of course_ids the user is currently enrolled in
+                  completed_courses:
+                    type: array
+                    items:
+                      type: string
+                    description: A list of course_ids the user has completed
+
+  
   /course/{course_id}:
     get:
-      summary: Get Course Weeks
-      description: Returns a list of week IDs for a specific course.
+      tags:
+        - Course Content
+      summary: Get Course Data
+      description: Dictionary containing Course specific data like List of week_ids, grades, etc.
       parameters:
         - in: path
           name: course_id
@@ -15,20 +60,34 @@ paths:
             type: integer
           required: true
           description: The ID of the course
+
       responses:
         '200':
-          description: A list of week IDs
+          description: An object containg course data
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                type: object
+                properties:
+                  course_id:
+                    type: integer
+                    description: The unique identifier of the user
+                  course_title:
+                    type: string
+                    description: The name of the user
+                  week_ids:
+                    type: array
+                    items:
+                      type: string
+                    description: A list of week_ids for the course
+                  
 
   /course/{course_id}/{week_id}:
     get:
       summary: Get Weekly Content
       description: Returns a list of video IDs for a specific week of a course.
+      tags:
+        - Weekly Content
       parameters:
         - in: path
           name: course_id
@@ -48,14 +107,36 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                type: object
+                properties:
+                  video_ids:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        topic_tag:
+                          type: string
+                          example: link for video
+                  assignments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        assignment_id:
+                          type: string
+                          example: Assignment Name
+                  grades:
+                    type: object
+                    properties:
+                      assignment_id:
+                        type: integer
 
-  /course_assignment/{course_id}/{week_id}:
+  /course_assignment/{course_id}/{week_id}/{assignment_id}:
     get:
       summary: Get Weekly Assignment
-      description: Returns assignment IDs for a specific week.
+      description: Returns data for a specific assignment.
+      tags:
+        - Weekly Assignment
       parameters:
         - in: path
           name: course_id
@@ -69,6 +150,12 @@ paths:
             type: integer
           required: true
           description: The ID of the week
+        - in: path
+          name: assignment_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the assigment
       responses:
         '200':
           description: Data for assignments
@@ -76,13 +163,28 @@ paths:
             application/json:
               schema:
                 type: array
-                items:
-                  type: integer
+                items: 
+                  type: object
+                  properties:
+                    question_id:
+                      type: string
+                      example: Question 1
+                    options:
+                      type: array
+                      items:
+                        type: string
+                        example: Option 1
+                    answer:
+                      type: string
+                      example: Answer 1
+                    
 
   /course_assignment/{week_id}/{assignment_id}:
-    post:
+    put:
       summary: Submit Assignment Answers
       description: Submits answers for a specific assignment.
+      tags:
+        - Weekly Assignment
       parameters:
         - in: path
           name: week_id
@@ -114,11 +216,53 @@ paths:
             application/json:
               schema:
                 type: string
+                example: "Assignment Submitted"
+                
+
+  /answers/{course_id}/{week_id}/{assignment_id}:
+    get:
+      summary: Get Answers submitted by Studen
+      description: Returns a dictionary with questions and answers submitted by the student.
+      tags:
+        - Assignment Answers
+      parameters:
+        - in: path
+          name: course_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course
+        - in: path
+          name: week_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the week
+        - in: path
+          name: assignment_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the assigment
+      responses:
+        '200':
+          description: Student answers for the assignment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    question_id:
+                      type: string
+                      example: Student selected answer
+                    
 
   /summary/{course_id}/{week_id}:
     get:
       summary: Get Weekly Summary
-      description: Provides an AI-generated summary of a week.
+      description: Provides an AI-generated summary of a week. Along with a summary of all the lectures since the user last logged in
+      tags:
+        - Lecture Summary
       parameters:
         - in: path
           name: course_id
@@ -139,11 +283,14 @@ paths:
             application/json:
               schema:
                 type: string
+                example: This is a summary for the week 1
 
   /summary/{course_id}/{week_id}/{video_id}:
     get:
       summary: Get Lecture Summary
       description: Provides an AI-generated summary of a specific lecture.
+      tags:
+        - Lecture Summary
       parameters:
         - in: path
           name: course_id
@@ -170,11 +317,14 @@ paths:
             application/json:
               schema:
                 type: string
+                example: This is a summary of video lecture 1
 
-  /mock_assignment/{course_id}/{week_id}:
+  /mock_assignment/{course_id}/{week_id}/{assignment_type}:
     get:
       summary: Get Weekly Mock Questions
-      description: Generates mock questions for all lectures in a week.
+      description: Generates either programming or theoretical mock questions for a week.
+      tags:
+        - Mock Assignment
       parameters:
         - in: path
           name: course_id
@@ -188,6 +338,14 @@ paths:
             type: integer
           required: true
           description: The ID of the week
+        - in: path
+          name: assignment_type
+          schema:
+            type: string
+            example: theoretical/programming
+          required: true
+          description: The type of assignment question which is to be generated
+        
       responses:
         '200':
           description: AI-generated mock questions for the week
@@ -204,11 +362,14 @@ paths:
                       type: array
                       items:
                         type: string
-
+                   
+                   
   /mock_assignment/{course_id}:
     get:
       summary: Get Course Mock Questions
-      description: Generates mock questions for all lectures in a course.
+      description: Generates mock questions for the whole course.
+      tags:
+        - Mock Assignment
       parameters:
         - in: path
           name: course_id
@@ -232,11 +393,14 @@ paths:
                       type: array
                       items:
                         type: string
+                    
 
   /mock_assignment:
     post:
-      summary: Get Mock Questions for Multiple Courses
-      description: Generates mock questions for multiple courses.
+      summary: Get Mock Questions for Multiple Courses/Weeks/Topics
+      description: Generates mock questions for multiple courses or weeks or topics.
+      tags:
+        - Mock Assignment
       requestBody:
         required: true
         content:
@@ -248,6 +412,14 @@ paths:
                   type: array
                   items:
                     type: integer
+                week_ids:
+                  type: array
+                  items:
+                    type: integer
+                topics:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: AI-generated mock questions for the specified courses
@@ -258,24 +430,43 @@ paths:
                 items:
                   type: object
                   properties:
-                    course_id:
-                      type: integer
-                    questions:
+                    question_text:
+                      type: string
+                    options:
                       type: array
                       items:
-                        type: object
-                        properties:
-                          question_text:
-                            type: string
-                          options:
-                            type: array
-                            items:
-                              type: string
+                        type: string
+                        
+                        
+  /mock_assignment/{question_id}:
+    delete:
+      summary: Delete a question
+      description: Deletes a question from the database.
+      tags:
+        - Mock Assignment
+      parameters:
+        - in: path
+          name: question_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the question
+      responses:
+        '200':
+          description: Delete confirmation
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Question Deleted                        
+                        
 
   /weak_concepts/{course_id}:
     get:
       summary: Get Weak Concepts
-      description: Lists topics where the student hasn't scored well.
+      description: Lists topics where the student hasn't performed well.
+      tags:
+        - Weak Concepts
       parameters:
         - in: path
           name: course_id
@@ -292,11 +483,14 @@ paths:
                 type: array
                 items:
                   type: string
+                  example: topics
 
-  /prog_hint/{course_id}/{week_id}/{content_id}:
+  /prog_hint/{course_id}/{week_id}/{assignment_id}/{question_id}:
     post:
       summary: Get Programming Hints
       description: Provides hints based on the user's submitted code.
+      tags:
+        - Programming Assistant
       parameters:
         - in: path
           name: course_id
@@ -311,11 +505,18 @@ paths:
           required: true
           description: The ID of the week
         - in: path
-          name: content_id
+          name: assignment_id
           schema:
             type: integer
           required: true
-          description: The ID of the content
+          description: The ID of the assignment
+        - in: path
+          name: question_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the question
+      
       requestBody:
         required: true
         content:
@@ -332,11 +533,14 @@ paths:
             application/json:
               schema:
                 type: string
+                example: Hint to solve question/rectify error
 
-  /alter_sol/{course_id}/{week_id}/{content_id}:
+  /alter_sol/{course_id}/{week_id}/{assignment_id}/{question_id}:
     get:
       summary: Get Alternative Solutions
       description: Provides AI-generated alternative solutions for a programming assignment.
+      tags:
+        - Programming Assistant
       parameters:
         - in: path
           name: course_id
@@ -351,11 +555,17 @@ paths:
           required: true
           description: The ID of the week
         - in: path
-          name: content_id
+          name: assignment_id
           schema:
             type: integer
           required: true
-          description: The ID of the content
+          description: The ID of the assignment
+        - in: path
+          name: question_id
+          schema:
+            type: integer
+          required: true
+          description: The ID of the question
       responses:
         '200':
           description: AI-generated alternative solutions
@@ -363,3 +573,4 @@ paths:
             application/json:
               schema:
                 type: string
+                example: Alternative Solution
