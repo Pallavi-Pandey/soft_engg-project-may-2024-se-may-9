@@ -25,14 +25,14 @@ class Week(db.Model):
         week_id (int): Auto-generated integer that acts as an identifier in the table.
         course_id (int): The ID of the course to which the week belongs.
         week_name (str): The name of the week/heading.
-        begin_date (datetime): The date when the week begins. It will be only displayed once it has begin.
+        begin_date (date): The date when the week begins. It will be only displayed once it has begin.
     '''
 
     __tablename__ = 'week'
     week_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.course_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     week_name = db.Column(db.String(50), nullable=False)
-    begin_date = db.Column(db.DateTime(timezone=True), nullable=False)
+    begin_date = db.Column(db.Date, nullable=False)
 
 class Student(db.Model):
     '''
@@ -46,6 +46,7 @@ class Student(db.Model):
     __tablename__ = 'student'
     student_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     student_name = db.Column(db.String(50), nullable=False)
+    last_login_date = db.Column(db.Date)
 
 class WeeklyContentType(Enum):
     '''
