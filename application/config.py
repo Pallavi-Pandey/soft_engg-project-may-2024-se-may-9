@@ -8,4 +8,4 @@ class Config():
 class LocalDevelopmentConfig(Config):
     DEBUG = True
     SECRET_KEY = "dev"
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:tiger@localhost:5432/student_learner_portal_database" #postgresql://<USERNAME>:<PASSWORD>@<URL>:<PORT_NUMBER>/<DATABASE_NAME>
+    SQLALCHEMY_DATABASE_URI = "sqlite:///student_portal_db.sqlite3"
