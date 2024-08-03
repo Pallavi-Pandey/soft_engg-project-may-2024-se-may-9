@@ -1,3 +1,4 @@
+from flask_restful import Api
 from application.config import LocalDevelopmentConfig
 from application.database import db
 from application.models import Student
@@ -20,7 +21,7 @@ def create_app():
 
     # Initialize SQLAlchemy after creating the app
     db.init_app(app)
-    # api = Api(app)
+    api = Api(app)
     return app, api
 
 app, api = create_app()
