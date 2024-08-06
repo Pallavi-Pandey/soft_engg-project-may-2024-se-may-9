@@ -281,12 +281,15 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-              example:
-                - This is the summary of Module 1 of Week-1.
-                - This is the summary of Module 2 of Week-2.
+                type: object
+                properties:
+                  summary:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                        - This is the summary of Module 1 of Week-1.
+                        - This is the summary of Module 2 of Week-2.
         '404':
           description: No Course/Week/Module/Transcript found for the Course.
         '500':
@@ -316,12 +319,15 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-              example:
-                - This is the summary of Module 1.
-                - This is the summary of Module 2.
+                type: object
+                properties:
+                  summary:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - This is the summary of Module 1.
+                      - This is the summary of Module 2.
         '404':
           description: No Week/Module/Transcript found for the week.
         '500':
@@ -351,8 +357,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: This is a summary of video lecture 1
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: This is a summary of video lecture 1
         '404':
           description: For the specified cotnent_id either the module or the transcript of the module does not exist.
         '500':
@@ -548,8 +557,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: Try to solve the problem using Greedy approach.
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: Try to solve the problem using Greedy approach.
         '404':
           description: Programming Assignment not found.
         '500':
@@ -576,16 +588,22 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-              example: "def main():\n pass"
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "def minElem(nums):\npass"
       responses:
         '200':
           description: Hints based on the submitted code
           content:
             application/json:
               schema:
-                type: string
-                example: Replace the pass keyword with your logic.
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: Replace the pass keyword with your logic.
         '404':
           description: Programming Assignment not found.
         '500':
@@ -614,16 +632,22 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-              example: "def minElem(nums):\nreturn min(nums)"
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "def minElem(nums):\nreturn min(nums)"
       responses:
         '200':
           description: AI-generated alternative solutions
           content:
             application/json:
               schema:
-                type: string
-                example: You have already written the best solution.
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: You have already written the best solution.
         '404':
           description: Programming Assignment not found.
         '500':
