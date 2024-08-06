@@ -257,19 +257,53 @@ paths:
                       example: Student selected answer
                     
 
-  /summary/{course_id}/{week_id}:
+  /summary/course/{course_id}:
     get:
-      summary: Get Weekly Summary
-      description: Provides an AI-generated summary of a week. Along with a summary of all the lectures since the user last logged in
+      summary: Get Course Summary since Last Logged In
+      description: Proivded an AI-generated summary of the lecutres of a course since the user last logged in.
       tags:
-        - Lecture Summary
+        - Summary
       parameters:
+        - in: header
+          name: Authentication-Token
+          schema:
+            type: string
+          required: true
         - in: path
           name: course_id
           schema:
             type: integer
           required: true
           description: The ID of the course
+      responses:
+        '200':
+          description: AI-generated summary of the week
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                - This is the summary of Module 1 of Week-1.
+                - This is the summary of Module 2 of Week-2.
+        '404':
+          description: No Course/Week/Module/Transcript found for the Course.
+        '500':
+          description: Something went Wrong
+                
+  /summary/week/{week_id}:  
+    get:
+      summary: Get Weekly Summary
+      description: Provides an AI-generated summary of a week.
+      tags:
+        - Summary
+      parameters:
+        - in: header
+          name: Authentication-Token
+          schema:
+            type: string
+          required: true
         - in: path
           name: week_id
           schema:
@@ -282,30 +316,31 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: This is a summary for the week 1
+                type: array
+                items:
+                  type: string
+              example:
+                - This is the summary of Module 1.
+                - This is the summary of Module 2.
+        '404':
+          description: No Week/Module/Transcript found for the week.
+        '500':
+          description: Something went Wrong
 
-  /summary/{course_id}/{week_id}/{video_id}:
+  /summary/module/{content_id}:
     get:
       summary: Get Lecture Summary
       description: Provides an AI-generated summary of a specific lecture.
       tags:
-        - Lecture Summary
+        - Summary
       parameters:
-        - in: path
-          name: course_id
+        - in: header
+          name: Authentication-Token
           schema:
-            type: integer
+            type: string
           required: true
-          description: The ID of the course
         - in: path
-          name: week_id
-          schema:
-            type: integer
-          required: true
-          description: The ID of the week
-        - in: path
-          name: video_id
+          name: content_id
           schema:
             type: integer
           required: true
@@ -318,6 +353,10 @@ paths:
               schema:
                 type: string
                 example: This is a summary of video lecture 1
+        '404':
+          description: For the specified cotnent_id either the module or the transcript of the module does not exist.
+        '500':
+          description: Something went Wrong
 
   /mock_assignment/{course_id}/{week_id}/{assignment_type}:
     get:
