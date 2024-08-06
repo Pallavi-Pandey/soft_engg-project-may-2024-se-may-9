@@ -59,4 +59,4 @@ class WeeklyContentResource(Resource):
             
                 return make_response(jsonify({'Videos': videos, 'HTML': html_content}), 201)
 
-
+api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
