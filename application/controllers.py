@@ -68,7 +68,7 @@ def log_in():
 
         return make_response(jsonify({'token': user.get_auth_token()}), 200)
     else:
-        return make_response(jsonify({'error_message': 'Invalid credentials.'}), 404)
+        return make_response(jsonify({'error_message': 'Invalid credentials.'}), 400)
 
 # Log out the user
 @app.post('/log_out')
@@ -78,7 +78,7 @@ def log_out():
         logout_user()
         return make_response(jsonify({'message': 'Logout successful'}), 200) 
     except Exception as e:
-        return {'error_message': str(e)}, 500
+        return {'error_message': str(e)}, 400
 
 # Get details of the currently logged-in user
 @app.route('/get_user', endpoint='get_user')
