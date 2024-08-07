@@ -1,3 +1,4 @@
+from application.api import CourseSummaryAPI, ModuleSummaryAPI, ProgrammingAssistantAlternateSolutionAPI, ProgrammingAssistantHintAPI, WeekSummaryAPI
 from application.models import db, User, Role
 from application.config import LocalDevelopmentConfig
 from flask import Flask, jsonify
@@ -23,6 +24,13 @@ def create_app():
     db.init_app(app)
        
     api = Api(app, prefix='/api')
+
+    # Add the resource to API
+    api.add_resource(ModuleSummaryAPI, "/summary/module/<int:content_id>")
+    api.add_resource(WeekSummaryAPI, "/summary/week/<int:week_id>/")
+    api.add_resource(CourseSummaryAPI, "/summary/course/<int:course_id>/")
+    api.add_resource(ProgrammingAssistantHintAPI, "/program_hint/<int:assignment_id>/")
+    api.add_resource(ProgrammingAssistantAlternateSolutionAPI, "/alter_sol/<int:assignment_id>/")
 
     datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, datastore)

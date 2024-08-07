@@ -1,4 +1,4 @@
-﻿aniso8601==9.0.1
+aniso8601==9.0.1
 asttokens==2.4.1
 attrs==24.1.0
 backcall==0.2.0
@@ -77,3 +77,4 @@ Werkzeug==3.0.3
 WTForms==3.1.2
 yarg==0.1.9
 zipp==3.19.2
+google-generativeai==0.7.2
