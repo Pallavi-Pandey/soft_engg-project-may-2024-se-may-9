@@ -1,9 +1,10 @@
 from application import models
 from datetime import date, datetime
 from flask import current_app as app, request, jsonify, make_response
-from main import db, api
 from flask_security import auth_required, current_user
-from flask_restful import Resource, abort, reqparse, fields, marshal_with
+from flask_restful import Resource, Api, abort, reqparse, fields, marshal_with
+
+api = Api(prefix='/api')
 
 class CourseResource(Resource):
 
@@ -14,16 +15,19 @@ class CourseResource(Resource):
             abort(404, message='No such course found')
         else:
             weeks = models.Week.query.filter_by(course_id=course_id).all()
-            week_list = [
-                {
-                    "id": week.week_id,
-                    "title": week.week_name,
-                    "start": week.begin_date
-                }
-                for week in weeks
-            ]
+            if not weeks:
+                abort(404, message='No weeks found for that course')
+            else:
+                week_list = [
+                    {
+                        "id": week.week_id,
+                        "title": week.week_name,
+                        "start": week.begin_date
+                    }
+                    for week in weeks
+                ]
 
-            return make_response(jsonify({'Course': course.name, 'Weeks': week_list}), 201)
+                return make_response(jsonify({'Course': course.course_title, 'Weeks': week_list}), 201)
     
 api.add_resource(CourseResource, '/courses/<int:course_id>')
 

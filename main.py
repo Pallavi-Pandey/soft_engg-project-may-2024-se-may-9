@@ -1,12 +1,10 @@
 from application.models import db, User, Role
 from application.config import LocalDevelopmentConfig
+from application.api import api
 from flask import Flask, jsonify
-from flask_restful import Api
 from flask_security import SQLAlchemyUserDatastore, Security
 import os
 
-app = None
-api = None
 
 def create_app():
     # create and configure the app
@@ -22,7 +20,7 @@ def create_app():
     # Initialize SQLAlchemy after creating the app
     db.init_app(app)
        
-    api = Api(app, prefix='/api')
+    api.init_app(app)
 
     datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, datastore)
