@@ -33,7 +33,7 @@ class SummarizerAI:
         # Fetch and upload the transcript files to the Gemini Server
         for transcipt_file_uri in transcript_file_uri_list:
             uploaded_transcript_files.append(genai.upload_file(
-                path = os.path.join(local_data_path, transcipt_file_uri[0]),
+                path = os.path.join(local_data_path, transcipt_file_uri),
                 mime_type = "application/pdf"
             ))     
 
@@ -80,30 +80,19 @@ class ProgrammingAssistantAI:
     )
         
     def getHitsForProblem(self, problem_statement):
-        user_prompt = "Hello consider this problem statement: "
-        + problem_statement
-        + "\n\n Could you provide the hints so that I can solve the problem on my own?"
+        user_prompt = "Hello consider this problem statement: {} \n\nCould you provide the hints so that I can solve the problem on my own?".format(problem_statement)
 
-        response = genai.generate_text(user_prompt)
+        response = self.model.generate_content(user_prompt)
         return response.text
     
     def getHintsForCode(self, problem_statement, code):
-        user_prompt = "Hello consider this problem statement: "
-        + problem_statement
-        + "\n\n Could you provide the hints so that I resolve the errors in the code on my own. "
-        + "Here is the code that I have written on my own: \n\n"
-        + code
+        user_prompt = "Hello consider this problem statement: {} \n\n Could you provide the hints so that I resolve the errors in the code on my own Please provide proper hint like in which line number what is causing the error and how the user can resolve the error. Here is the code that I have written on my own: \n\n {}".format(problem_statement, code)
 
-        response = genai.generate_text(user_prompt)
+        response = self.model.generate_content(user_prompt)
         return response.text
     
     def getAlternateSolution(self, problem_statement, code):
-        user_prompt = "Hello consider this problem statement: "
-        + problem_statement
-        + "\n\n Could you provide the alternate solution to the problem. "
-        + "The code I wrote is correct and works but I want to see if there is any better solution. "
-        + "Here is the code that I have written on my own: \n\n"
-        + code
+        user_prompt = "Hello consider this problem statement: {} \n\n Could you provide the alternate solution to the problem. The code I wrote is correct and works but I want to see if there is any better solution. Here is the code that I have written on my own: \n\n {}".format(problem_statement, code)
 
-        response = genai.generate_text(user_prompt)
+        response = self.model.generate_content(user_prompt)
         return response.text
