@@ -41,28 +41,19 @@ class WeeklyContentResource(Resource):
             abort(404, message='No such course found')
         else:
             week = Week.query.filter_by(course_id=course_id).filter_by(week_id=week_id).first()
-            contents = WeeklyContent.query.filter_by(week_id=week.id).all()
+            contents = WeeklyContent.query.filter_by(week_id=week.week_id).all()
             if not contents:
                 abort(404, message='No content found for that week')
             else:    
-                videos = []
-                html_content = []
-
+                weekly_contents = []
                 for content in contents:
-                    if content.content_type == 'module_content_type':
-                        video = VideoModule.query.filter_by(content_id=content.id).first()
-                        videos.append({
-                            'video_id': video.video_id,
-                            'transcript_uri': video.transcript_uri,
-                            'tags_uri': video.tags_uri
-                        })
-                    elif content.content_type == 'html_page_content_type':
-                        course_page = CoursePageContent.query.filter_by(content_id=content.id).first()
-                        html_content.append({
-                            'html': course_page.html_content
-                        })
-            
-                return make_response(jsonify({'Videos': videos, 'HTML': html_content}), 201)
+                    weekly_contents.append({
+                        'title': content.title,
+                        'order': content.arrangement_order,
+                        'type': content.content_type
+                    })
+                
+                return make_response(jsonify({'Week': week.week_name, 'Contents': weekly_contents}), 200)
 
 api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
 

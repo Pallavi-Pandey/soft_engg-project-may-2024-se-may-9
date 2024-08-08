@@ -5,6 +5,7 @@ export default {
           <h1 class="mb-5 display-4">Welcome, {{ name }}!</h1>
           <div style="justify-content: center">
             <button class="btn btn-primary" @click="$router.push('/course_info')">Test Course Info Retrieval</button>
+            <button class="btn btn-secondary" @click="$router.push('/weekly_content')">Test Weekly Content Retrieval</button>
             <button @click="log_out" class="btn btn-danger me-2">Log Out</button>
           </div>
         </div>
