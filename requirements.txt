@@ -65,6 +65,7 @@ pyzmq==26.1.0
 referencing==0.35.1
 requests==2.32.3
 rpds-py==0.19.1
+setuptools==72.1.0
 six==1.16.0
 soupsieve==2.5
 SQLAlchemy==2.0.31

@@ -1,4 +1,4 @@
-from application.api import CourseSummaryAPI, ModuleSummaryAPI, ProgrammingAssistantAlternateSolutionAPI, ProgrammingAssistantHintAPI, WeekSummaryAPI
+from application.api import CourseResource, CourseSummaryAPI, ModuleSummaryAPI, ProgrammingAssistantAlternateSolutionAPI, ProgrammingAssistantHintAPI, WeekSummaryAPI, WeeklyContentResource
 from application.models import db, User, Role
 from application.config import LocalDevelopmentConfig
 from flask import Flask, jsonify
@@ -26,6 +26,8 @@ def create_app():
     api = Api(app, prefix='/api')
 
     # Add the resource to API
+    api.add_resource(CourseResource, '/courses/<int:course_id>')
+    api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
     api.add_resource(ModuleSummaryAPI, "/summary/module/<int:content_id>")
     api.add_resource(WeekSummaryAPI, "/summary/week/<int:week_id>/")
     api.add_resource(CourseSummaryAPI, "/summary/course/<int:course_id>/")

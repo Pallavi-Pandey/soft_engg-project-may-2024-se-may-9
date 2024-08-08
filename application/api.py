@@ -1,9 +1,10 @@
 from application import models
 from datetime import date, datetime
 from flask import current_app as app, request, jsonify, make_response
-from main import db, api
 from flask_security import auth_required, current_user
 from flask_restful import Resource, abort, reqparse, fields, marshal_with
+from application.models import GradedProgrammingAssignmentContent, ProgrammingAssignmentContent, VideoModule, Week, WeeklyContent, WeeklyContentType
+from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI
 
 class CourseResource(Resource):
 
@@ -24,8 +25,6 @@ class CourseResource(Resource):
             ]
 
             return make_response(jsonify({'Course': course.name, 'Weeks': week_list}), 201)
-    
-api.add_resource(CourseResource, '/courses/<int:course_id>')
 
 class WeeklyContentResource(Resource):
 
@@ -59,16 +58,6 @@ class WeeklyContentResource(Resource):
             
                 return make_response(jsonify({'Videos': videos, 'HTML': html_content}), 201)
 
-api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
-
-from datetime import date
-from flask import jsonify, request
-from flask_login import current_user
-from flask_restful import Resource
-from application.models import GradedProgrammingAssignmentContent, ProgrammingAssignmentContent, VideoModule, Week, WeeklyContent, WeeklyContentType
-from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI
-from flask_security import auth_required
-
 class ModuleSummaryAPI(Resource):
 
     moduleSummarizerAI = SummarizerAI(max_output_tokens=1_000)
@@ -82,7 +71,7 @@ class ModuleSummaryAPI(Resource):
                     VideoModule.transcript_uri
                 ).filter(
                     VideoModule.content_id == content_id
-                ).first()
+                ).first()[0]
             )
             if module_transcript_file_uri_list:
                 summary = self.moduleSummarizerAI.getGeneratedSummary(module_transcript_file_uri_list)
@@ -105,13 +94,12 @@ class WeekSummaryAPI(Resource):
                 module_content_id_list = WeeklyContent.query.with_entities(
                     WeeklyContent.content_id
                     ).filter(
-                        WeeklyContent.week_id == week_id
-                        and
-                        WeeklyContent.content_type == WeeklyContentType.module_content_type
+                        WeeklyContent.week_id == week_id,
+                        WeeklyContent.content_type == WeeklyContentType.module_content_type.value
                     ).order_by(
                         WeeklyContent.arrangement_order
                     ).all()
-                
+                                
                 module_transcript_file_uri_list = []
                 for module_content_id in module_content_id_list:
                     module_transcript_file_uri_list.append(
@@ -119,9 +107,9 @@ class WeekSummaryAPI(Resource):
                             VideoModule.transcript_uri
                         ).filter(
                             VideoModule.content_id == module_content_id[0]
-                        ).first()
+                        ).first()[0]
                     )
-                
+                                
                 if not module_transcript_file_uri_list:
                     return "No Module/Transcripts found for the week", 404
 
@@ -138,7 +126,7 @@ class CourseSummaryAPI(Resource):
 
     courseSummarizerAI = SummarizerAI(max_output_tokens=1_50_000)
 
-    # @auth_required("token")
+    @auth_required("token")
     def get(self, course_id):
         try:
             user_last_logged_in_date = current_user.last_login_date
@@ -146,8 +134,7 @@ class CourseSummaryAPI(Resource):
             visited_week_id_list = Week.query.with_entities(
                 Week.week_id
             ).filter(
-                Week.course_id == course_id
-                and
+                Week.course_id == course_id,
                 Week.begin_date < user_last_logged_in_date
             ).all()
 
@@ -158,9 +145,8 @@ class CourseSummaryAPI(Resource):
                     WeeklyContent.query.with_entities(
                         WeeklyContent.content_id
                     ).filter(
-                        WeeklyContent.week_id == visited_weeek_id[0]
-                        and 
-                        WeeklyContent.content_type == WeeklyContentType.module_content_type
+                        WeeklyContent.week_id == visited_weeek_id[0],
+                        WeeklyContent.content_type == WeeklyContentType.module_content_type.value
                     ).all()
                 )
             
@@ -171,7 +157,7 @@ class CourseSummaryAPI(Resource):
                         VideoModule.transcript_uri
                     ).filter(
                         VideoModule.content_id == module_content_id[0]
-                    ).first()
+                    ).first()[0]
                 )
             
             if not module_transcript_file_uri_list:
@@ -190,7 +176,7 @@ class ProgrammingAssistantHintAPI(Resource):
 
     programmingHintAI = ProgrammingAssistantAI(max_output_tokens=1_00_000)
     
-    # @auth_required("token")
+    @auth_required("token")
     def get(self, assignment_id):
         try:
             assignment_type = WeeklyContent.query.with_entities(
@@ -199,16 +185,19 @@ class ProgrammingAssistantHintAPI(Resource):
                 WeeklyContent.content_id == assignment_id
             ).first()[0]
             
-            if assignment_type == WeeklyContentType.programming_content_type:
+            if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
                     ProgrammingAssignmentContent.problem_statement
                 ).filter(
                     ProgrammingAssignmentContent.content_id == assignment_id
                 ).first()[0]
             
-                response = self.programmingHintAI.getHitsForProblem(problem_statement)
-                return jsonify({"hint": response}), 200
-            elif assignment_type == WeeklyContentType.graded_programming_content_type:
+                hint = self.programmingHintAI.getHitsForProblem(problem_statement)
+                result = {"hint" : hint}
+                response = jsonify(result)
+                response.status_code = 200
+                return response
+            elif assignment_type == WeeklyContentType.graded_programming_content_type.value:
                 problem_statement, assignment_deadline = GradedProgrammingAssignmentContent.query.with_entities(
                     GradedProgrammingAssignmentContent.problem_statement,
                     GradedProgrammingAssignmentContent.deadline
@@ -230,7 +219,7 @@ class ProgrammingAssistantHintAPI(Resource):
         except Exception as e:
             return "Something went Wrong", 500
     
-    # @auth_required("token")
+    @auth_required("token")
     def post(self, assignment_id):
         try:
             user_code = request.get_json().get("code")
@@ -240,16 +229,19 @@ class ProgrammingAssistantHintAPI(Resource):
                 WeeklyContent.content_id == assignment_id
             ).first()[0]
             
-            if assignment_type == WeeklyContentType.programming_content_type:
+            if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
                     ProgrammingAssignmentContent.problem_statement
                 ).filter(
                     ProgrammingAssignmentContent.content_id == assignment_id
                 ).first()[0]
             
-                response = self.programmingHintAI.getHintsForCode(problem_statement, user_code)
-                jsonify({"hint": response}), 200
-            elif assignment_type == WeeklyContentType.graded_programming_content_type:
+                hint = self.programmingHintAI.getHintsForCode(problem_statement, user_code)
+                result = {"hint" : hint}
+                response = jsonify(result)
+                response.status_code = 200
+                return response
+            elif assignment_type == WeeklyContentType.graded_programming_content_type.value:
                 problem_statement, assignment_deadline = GradedProgrammingAssignmentContent.query.with_entities(
                     GradedProgrammingAssignmentContent.problem_statement,
                     GradedProgrammingAssignmentContent.deadline
@@ -286,16 +278,19 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
                 WeeklyContent.content_id == assignment_id
             ).first()[0]
             
-            if assignment_type == WeeklyContentType.programming_content_type:
+            if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
                     ProgrammingAssignmentContent.problem_statement
                 ).filter(
                     ProgrammingAssignmentContent.content_id == assignment_id
                 ).first()[0]
             
-                response = self.programmingHintAI.getAlternateSolution(problem_statement, user_code)
-                jsonify({"hint": response}), 200
-            elif assignment_type == WeeklyContentType.graded_programming_content_type:
+                hint = self.programmingHintAI.getAlternateSolution(problem_statement, user_code)
+                result = {"hint" : hint}
+                response = jsonify(result)
+                response.status_code = 200
+                return response
+            elif assignment_type == WeeklyContentType.graded_programming_content_type.value:
                 problem_statement, assignment_deadline = GradedProgrammingAssignmentContent.query.with_entities(
                     GradedProgrammingAssignmentContent.problem_statement,
                     GradedProgrammingAssignmentContent.deadline
