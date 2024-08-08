@@ -284,12 +284,8 @@ paths:
                 type: object
                 properties:
                   summary:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                        - This is the summary of Module 1 of Week-1.
-                        - This is the summary of Module 2 of Week-2.
+                    type: string
+                    example: This is the combined summary of Entire Week.
         '404':
           description: No Course/Week/Module/Transcript found for the Course.
         '500':
@@ -322,12 +318,8 @@ paths:
                 type: object
                 properties:
                   summary:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                      - This is the summary of Module 1.
-                      - This is the summary of Module 2.
+                    type: string
+                    example: This is the combined summary of the Module.
         '404':
           description: No Week/Module/Transcript found for the week.
         '500':
