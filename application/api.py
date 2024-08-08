@@ -1,8 +1,9 @@
-from application import models
 from datetime import date, datetime
 from flask import current_app as app, request, jsonify, make_response
 from flask_security import auth_required, current_user
 from flask_restful import Resource, Api, abort, reqparse, fields, marshal_with
+from application.models import *
+from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI
 
 api = Api(prefix='/api')
 
@@ -10,11 +11,11 @@ class CourseResource(Resource):
 
     @auth_required("token")
     def get(self, course_id):
-        course = models.Course.query.filter_by(course_id=course_id).first()
+        course = Course.query.filter_by(course_id=course_id).first()
         if not course:
             abort(404, message='No such course found')
         else:
-            weeks = models.Week.query.filter_by(course_id=course_id).all()
+            weeks = Week.query.filter_by(course_id=course_id).all()
             if not weeks:
                 abort(404, message='No weeks found for that course')
             else:
@@ -35,12 +36,12 @@ class WeeklyContentResource(Resource):
 
     @auth_required("token")
     def get(self, course_id, week_id, content_id=None):
-        course = models.Course.query.filter_by(course_id=course_id).first()
+        course = Course.query.filter_by(course_id=course_id).first()
         if not course:
             abort(404, message='No such course found')
         else:
-            week = models.Week.query.filter_by(course_id=course_id).filter_by(week_id=week_id).first()
-            contents = models.WeeklyContent.query.filter_by(week_id=week.id).all()
+            week = Week.query.filter_by(course_id=course_id).filter_by(week_id=week_id).first()
+            contents = WeeklyContent.query.filter_by(week_id=week.id).all()
             if not contents:
                 abort(404, message='No content found for that week')
             else:    
@@ -49,14 +50,14 @@ class WeeklyContentResource(Resource):
 
                 for content in contents:
                     if content.content_type == 'module_content_type':
-                        video = models.VideoModule.query.filter_by(content_id=content.id).first()
+                        video = VideoModule.query.filter_by(content_id=content.id).first()
                         videos.append({
                             'video_id': video.video_id,
                             'transcript_uri': video.transcript_uri,
                             'tags_uri': video.tags_uri
                         })
                     elif content.content_type == 'html_page_content_type':
-                        course_page = models.CoursePageContent.query.filter_by(content_id=content.id).first()
+                        course_page = CoursePageContent.query.filter_by(content_id=content.id).first()
                         html_content.append({
                             'html': course_page.html_content
                         })
@@ -64,14 +65,6 @@ class WeeklyContentResource(Resource):
                 return make_response(jsonify({'Videos': videos, 'HTML': html_content}), 201)
 
 api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
-
-from datetime import date
-from flask import jsonify, request
-from flask_login import current_user
-from flask_restful import Resource
-from application.models import GradedProgrammingAssignmentContent, ProgrammingAssignmentContent, VideoModule, Week, WeeklyContent, WeeklyContentType
-from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI
-from flask_security import auth_required
 
 class ModuleSummaryAPI(Resource):
 
@@ -98,6 +91,8 @@ class ModuleSummaryAPI(Resource):
                 return "Module/Transcript not found", 404 
         except Exception as e:
             return "Something went Wrong", 500
+
+api.add_resource(ModuleSummaryAPI, "/summary/module/<int:content_id>")
         
 class WeekSummaryAPI(Resource):
     
@@ -138,11 +133,13 @@ class WeekSummaryAPI(Resource):
             except Exception as e:
                 return "Something went Wrong", 500
 
+api.add_resource(WeekSummaryAPI, "/summary/week/<int:week_id>/")
+
 class CourseSummaryAPI(Resource):
 
     courseSummarizerAI = SummarizerAI(max_output_tokens=1_50_000)
 
-    # @auth_required("token")
+    @auth_required("token")
     def get(self, course_id):
         try:
             user_last_logged_in_date = current_user.last_login_date
@@ -190,11 +187,13 @@ class CourseSummaryAPI(Resource):
         except Exception as e:
             return "Something went Wrong", 500
         
+api.add_resource(CourseSummaryAPI, "/summary/course/<int:course_id>/")
+
 class ProgrammingAssistantHintAPI(Resource):
 
     programmingHintAI = ProgrammingAssistantAI(max_output_tokens=1_00_000)
     
-    # @auth_required("token")
+    @auth_required("token")
     def get(self, assignment_id):
         try:
             assignment_type = WeeklyContent.query.with_entities(
@@ -234,7 +233,7 @@ class ProgrammingAssistantHintAPI(Resource):
         except Exception as e:
             return "Something went Wrong", 500
     
-    # @auth_required("token")
+    @auth_required("token")
     def post(self, assignment_id):
         try:
             user_code = request.get_json().get("code")
@@ -276,11 +275,13 @@ class ProgrammingAssistantHintAPI(Resource):
         except Exception as e:
             return "Something went Wrong", 500
 
+api.add_resource(ProgrammingAssistantHintAPI, "/program_hint/<int:assignment_id>/")
+
 class ProgrammingAssistantAlternateSolutionAPI(Resource):
 
     programmingHintAI = ProgrammingAssistantAI(max_output_tokens=1_00_000)
     
-    # @auth_required("token")
+    @auth_required("token")
     def post(self, assignment_id):
         try:
             user_code = request.get_json().get("code")
@@ -322,3 +323,4 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
         except Exception as e:
             return "Something went Wrong", 500
         
+api.add_resource(ProgrammingAssistantAlternateSolutionAPI, "/alter_sol/<int:assignment_id>/")
