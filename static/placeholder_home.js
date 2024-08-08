@@ -4,6 +4,7 @@ export default {
         <div class="text-center" style="padding-top:150px">
           <h1 class="mb-5 display-4">Welcome, {{ name }}!</h1>
           <div style="justify-content: center">
+            <button class="btn btn-primary" @click="$router.push('/course_info')">Test Course Info Retrieval</button>
             <button @click="log_out" class="btn btn-danger me-2">Log Out</button>
           </div>
         </div>
@@ -55,7 +56,6 @@ export default {
 
         if (response.ok) {
             localStorage.removeItem('authToken');
-            localStorage.removeItem('role');
             console.log('Logout successful');
 
             // Redirect to the login page

@@ -1,13 +1,10 @@
-from application.api import CourseResource, CourseSummaryAPI, ModuleSummaryAPI, ProgrammingAssistantAlternateSolutionAPI, ProgrammingAssistantHintAPI, WeekSummaryAPI, WeeklyContentResource
 from application.models import db, User, Role
 from application.config import LocalDevelopmentConfig
+from application.api import api
 from flask import Flask, jsonify
-from flask_restful import Api
 from flask_security import SQLAlchemyUserDatastore, Security
 import os
 
-app = None
-api = None
 
 def create_app():
     # create and configure the app
@@ -23,16 +20,7 @@ def create_app():
     # Initialize SQLAlchemy after creating the app
     db.init_app(app)
        
-    api = Api(app, prefix='/api')
-
-    # Add the resource to API
-    api.add_resource(CourseResource, '/courses/<int:course_id>')
-    api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
-    api.add_resource(ModuleSummaryAPI, "/summary/module/<int:content_id>")
-    api.add_resource(WeekSummaryAPI, "/summary/week/<int:week_id>/")
-    api.add_resource(CourseSummaryAPI, "/summary/course/<int:course_id>/")
-    api.add_resource(ProgrammingAssistantHintAPI, "/program_hint/<int:assignment_id>/")
-    api.add_resource(ProgrammingAssistantAlternateSolutionAPI, "/alter_sol/<int:assignment_id>/")
+    api.init_app(app)
 
     datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, datastore)

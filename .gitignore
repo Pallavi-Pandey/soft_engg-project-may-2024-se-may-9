@@ -10,7 +10,6 @@ htmlcov/
 dist/
 build/
 *.egg-info/
-secrets.txt
 
 *.key
 
