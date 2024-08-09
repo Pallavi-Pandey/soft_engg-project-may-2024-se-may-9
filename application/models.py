@@ -34,7 +34,7 @@ class Week(db.Model):
     week_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     course_id = db.Column(db.Integer, db.ForeignKey(Course.course_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     week_name = db.Column(db.String(50), nullable=False)
-    begin_date = db.Column(db.Date, nullable=False)
+    begin_date = db.Column(db.DateTime(timezone=True), nullable=False)
 
 class User(db.Model, UserMixin):
     '''
@@ -52,7 +52,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, nullable=False)
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=True)
-    last_login_date = db.Column(db.Date)
+    last_login_date = db.Column(db.DateTime(timezone=True))
     roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
 
 class Role(db.Model, RoleMixin):

@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import requests
 import json
 
@@ -16,7 +17,6 @@ def test_user_signup_with_valid_inputs():
 
     assert request.status_code == 201
     assert request.json()['message'] == 'Student registered successfully' 
-
 
 def test_user_signup_with_invalid_inputs():
 
@@ -69,3 +69,177 @@ def test_user_login_with_invalid_credentials():
     assert request_two.status_code == request_one.status_code
     assert request_one.json()['error_message'] == 'Invalid credentials.'
     assert request_two.json()['error_message'] == request_one.json()['error_message']
+
+# Valid content_id, transcript found
+def test_module_summariser_get_valid_content_id_transcript_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/module/1", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 200
+    assert response.json()['summary'] is not None
+    assert type(response.json()['summary']) == str
+
+# Valid content_id, transcript not found
+def test_module_summariser_get_valid_content_id_transcript_not_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/module/5", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid content_id (non-integer)
+def test_module_summariser_get_invalid_content_id_non_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/module/2.5", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid content_id (negative integer)
+def test_module_summariser_get_invalid_content_id_negative_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/module/-2", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Valid week_id, modules found, transcripts found
+def test_week_summariser_get_valid_week_id_modules_found_transcripts_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/week/1", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.json()['summary'] is not None
+    assert type(response.json()['summary']) == str
+    assert response.status_code == 200
+
+# Valid week_id, modules found, not transcript found
+def test_week_summariser_get_valid_week_id_transcript_not_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/week/2", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Valid week_id, no module found
+def test_week_summariser_get_valid_week_id_module_not_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/week/3", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid week_id (non-integer)
+def test_week_summariser_get_invalid_week_id_non_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/week/2.5", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid content_id (negative integer)
+def test_week_summariser_get_invalid_week_id_negative_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/week/-2", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Valid course_id, weeks found, modules found, transcripts found
+def test_course_summariser_get_valid_course_id_weeks_modules_transcripts_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/1", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 200
+
+# Valid course_id, weeks found, modules found, no transcripts
+def test_course_summariser_get_valid_course_id_weeks_modules_no_transcripts():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/2", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Valid course_id, weeks found, no modules found
+def test_course_summariser_get_valid_course_id_weeks_no_modules_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/3", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Valid course_id, no weeks found
+def test_course_summariser_get_valid_course_id_no_weeks_found():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/4", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid course_id (non-integer)
+def test_course_summariser_get_invalid_course_id_non_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/2.5", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid course_id (negative integer)
+def test_course_summariser_get_invalid_course_id_negative_integer():
+    response = requests.get("http://127.0.0.1:5000/api/summary/course/-1", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Test cases for GET method
+# Valid assignment_id, programming content type
+def test_program_hints_get_valid_assignment_id_programming_content_type():
+    response = requests.get("http://127.0.0.1:5000/api/program_hint/3", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline passed
+def test_program_hints_get_valid_assignment_id_graded_programming_content_type_deadline_passed():
+    response = requests.get("http://127.0.0.1:5000/api/program_hint/4", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline not passed
+def test_program_hints_get_valid_assignment_id_graded_programming_content_type_deadline_not_passed():
+    response = requests.get("http://127.0.0.1:5000/api/program_hint/6", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Invalid assignment_id, wrong content type
+def test_program_hints_get_invalid_assignment_id_wrong_content_type():
+    response = requests.get("http://127.0.0.1:5000/api/program_hint/7", headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk"})
+    assert response.status_code == 404
+
+# Test cases for POST method
+# Valid assignment_id, programming content type
+def test_program_hints_post_valid_assignment_id_programming_content_type():
+    input_data = {
+        "code" : "for i in range(5):\n    print(5)",
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/program_hint/3", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline passed
+def test_program_hints_post_valid_assignment_id_graded_programming_content_type_deadline_passed():
+    input_data = {
+        "code" : "a,b,c = map(int, input().split(\" \"))\nif a==b==c:\n    print(\"YES\")\nelse:\n    print(\"NO\")",
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/program_hint/4", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline not passed
+def test_program_hints_post_valid_assignment_id_graded_programming_content_type_deadline_not_passed():
+    input_data = {
+        "code" : "num = int(input())\n if num < 0:\n    print(\"INVALID\")",
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/program_hint/6", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
+    assert response.status_code == 404
+
+# Invalid assignment_id, wrong content type
+def test_program_hints_post_invalid_assignment_id_wrong_content_type():
+    input_data = {
+        "code" : "num = int(input())\n if num < 0:\n    print(\"INVALID\")",
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/program_hint/7", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
+    assert response.status_code == 404
+
+# Valid assignment_id, programming content type
+def test_alternate_solution_post_valid_assignment_id_programming_content_type():
+    input_data = {
+        "code" : "print(1)\nprint(2)\nprint(3)\nprint(4)\nprint(5)\n"
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/alter_sol/3", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"}) 
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline passed
+def test_alternate_solution_post_valid_assignment_id_graded_programming_content_type_deadline_passed():
+    input_data = {
+        "code": "sides = []\nfor i in range(3):\n    sides.append(int(input()))\nsides.sort()\nif sides[0] + sides[1] > sides[2]:\n    print('YES')\nelse:\n    print('NO')\n"
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/alter_sol/4", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"}) 
+    assert response.status_code == 200
+
+# Valid assignment_id, graded programming content type, deadline not passed
+def test_alternate_solution_post_valid_assignment_id_graded_programming_content_type_deadline_not_passed():
+    input_data = {
+        "code" : "n = int(input())\nif n < 0:\n    print(\"INVALID\")\nelif 0 <= n <= 5:\n    print(\"NIGHT\")\nelif 6 <= n < 11:\n    print(\"MORNING\")\nelif 12 <= n <= 17:\n    print(\"AFTERNOON\")\nelif 18 <= n <= 23:\n    print(\"EVENING\")\nelse:    print(\"INVALID\")"
+    }
+    input_json = json.dumps(input_data)
+    response = requests.get("http://127.0.0.1:5000/api/alter_sol/6", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"}) 
+    assert response.status_code == 404
+
+# Invalid assignment_id, wrong content type
+def test_alternate_solution_post_invalid_assignment_wrong_content_type():
+    input_data = {
+        "code" : "num = int(input())\n if num < 0:\n    print(\"INVALID\")",
+    }
+    input_json = json.dumps(input_data)
+    response = requests.post("http://127.0.0.1:5000/api/program_hint/1", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
+    assert response.status_code == 404
+

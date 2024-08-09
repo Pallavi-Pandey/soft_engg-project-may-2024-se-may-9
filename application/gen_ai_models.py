@@ -1,10 +1,11 @@
 import os
+import time
 import google.generativeai as genai
 from application.config import local_data_path
 
 class SummarizerAI:
 
-    def __init__(self, model_name = "gemini-1.5-flash", max_output_tokens = 10_000):
+    def __init__(self, model_name = "gemini-1.5-flash", max_output_tokens = 1_00_000):
         self.model = genai.GenerativeModel(
             model_name = model_name,
             generation_config = {
@@ -21,7 +22,8 @@ class SummarizerAI:
             The pdf file would also contain some images or links for reference. You have to summarize the video lecture using the transcript
             in a proper format. You have to summarize the video lecture in such a way that the user can understand the video lecture without
             watching the video. Use proper structure of headings and bullet points for the summary and include every point of the lecture.
-            Ensure proper grammar and punctuation in the summary and porper markdown syntax for the headings and bullet points.
+            Ensure proper grammar and punctuation in the summary and porper markdown syntax for the headings and bullet points. The video
+            lecutres could also belong to several weeks, so the user may upload multiple pdf files containing the transcript of the video.
         '''
     )
 
@@ -38,9 +40,18 @@ class SummarizerAI:
             ))     
 
         summary_list = []
+
+        request_count = 0
+        start_time = time.time()
         
         # Fetch and store the generated summary
         for uploaded_transcript_file in uploaded_transcript_files:
+            elapsed_time = time.time() - start_time
+            if request_count > 14 and elapsed_time < 60:
+                time.sleep(60 - elapsed_time) # Gemini API only allows 15 requests per minute in free tier.
+                request_count = 0
+                start_time = time.time()
+            request_count += 1
             summary_list.append(self.model.generate_content([
                 self.prompt_message,
                 uploaded_transcript_file
@@ -48,8 +59,15 @@ class SummarizerAI:
             
             # Delete the uploaded file
             uploaded_transcript_file.delete()
+
+        combined_summary = "\n\n".join(summary_list)
+
+        if request_count > 14 and elapsed_time < 60:
+                time.sleep(60 - elapsed_time)
+
+        combined_summary = self.model.generate_content("Combined these multiple summaries and generate one single summary: \n\n{}".format(combined_summary)).text
                 
-        return summary_list
+        return combined_summary
     
 class ProgrammingAssistantAI:
 

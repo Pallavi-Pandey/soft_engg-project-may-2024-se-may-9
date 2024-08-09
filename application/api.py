@@ -81,9 +81,10 @@ class ModuleSummaryAPI(Resource):
                     VideoModule.content_id == content_id
                 ).first()[0]
             )
+            module_transcript_file_uri_list = [uri for uri in module_transcript_file_uri_list if uri is not None]
             if module_transcript_file_uri_list:
                 summary = self.moduleSummarizerAI.getGeneratedSummary(module_transcript_file_uri_list)
-                result = {"summary" : summary[0]}
+                result = {"summary" : summary}
                 response = jsonify(result)
                 response.status_code = 200
                 return response
@@ -112,6 +113,8 @@ class WeekSummaryAPI(Resource):
                                 
                 module_transcript_file_uri_list = []
                 for module_content_id in module_content_id_list:
+                    if module_content_id[0] is None:
+                        continue
                     module_transcript_file_uri_list.append(
                         VideoModule.query.with_entities(
                             VideoModule.transcript_uri
@@ -119,6 +122,8 @@ class WeekSummaryAPI(Resource):
                             VideoModule.content_id == module_content_id[0]
                         ).first()[0]
                     )
+
+                module_transcript_file_uri_list = [uri for uri in module_transcript_file_uri_list if uri is not None]    
                                 
                 if not module_transcript_file_uri_list:
                     return "No Module/Transcripts found for the week", 404
@@ -164,6 +169,8 @@ class CourseSummaryAPI(Resource):
             
             module_transcript_file_uri_list = []
             for module_content_id in module_content_id_list:
+                if module_content_id[0] is None:
+                    continue
                 module_transcript_file_uri_list.append(
                     VideoModule.query.with_entities(
                         VideoModule.transcript_uri
@@ -171,6 +178,8 @@ class CourseSummaryAPI(Resource):
                         VideoModule.content_id == module_content_id[0]
                     ).first()[0]
                 )
+
+            module_transcript_file_uri_list = [uri for uri in module_transcript_file_uri_list if uri is not None]
             
             if not module_transcript_file_uri_list:
                 return "No Week/Module/Transcripts found for the Course", 404
@@ -197,7 +206,12 @@ class ProgrammingAssistantHintAPI(Resource):
                 WeeklyContent.content_type
             ).filter(
                 WeeklyContent.content_id == assignment_id
-            ).first()[0]
+            ).first()
+
+            if assignment_type is None:
+                return "Invalid Assignment ID", 404
+            else:
+                assignment_type = assignment_type[0]
             
             if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
@@ -218,8 +232,8 @@ class ProgrammingAssistantHintAPI(Resource):
                 ).filter(
                     GradedProgrammingAssignmentContent.content_id == assignment_id
                 ).first()
-
-                if assignment_deadline < date.today():
+                
+                if assignment_deadline < datetime.now():
                     hint = self.programmingHintAI.getHitsForProblem(problem_statement)
                     result = {"hint" : hint}
                     response = jsonify(result)
@@ -237,11 +251,20 @@ class ProgrammingAssistantHintAPI(Resource):
     def post(self, assignment_id):
         try:
             user_code = request.get_json().get("code")
+
+            if not user_code:
+                return "No User Code Provided", 404
+            
             assignment_type = WeeklyContent.query.with_entities(
                 WeeklyContent.content_type
             ).filter(
                 WeeklyContent.content_id == assignment_id
-            ).first()[0]
+            ).first()
+
+            if assignment_type is None:
+                return "Invalid Assignment ID", 404
+            else:
+                assignment_type = assignment_type[0]
             
             if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
@@ -263,7 +286,7 @@ class ProgrammingAssistantHintAPI(Resource):
                     GradedProgrammingAssignmentContent.content_id == assignment_id
                 ).first()
 
-                if assignment_deadline < date.today():
+                if assignment_deadline < datetime.now():
                     response = self.programmingHintAI.getHintsForCode(problem_statement, user_code)
                     hint = self.programmingHintAI.getHitsForProblem(problem_statement)
                     result = {"hint" : hint}
@@ -288,11 +311,20 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
     def post(self, assignment_id):
         try:
             user_code = request.get_json().get("code")
+
+            if not user_code:
+                return "No User Code Provided", 404
+            
             assignment_type = WeeklyContent.query.with_entities(
                 WeeklyContent.content_type
             ).filter(
                 WeeklyContent.content_id == assignment_id
-            ).first()[0]
+            ).first()
+
+            if assignment_type is None:
+                return "Invalid Assignment ID", 404
+            else:
+                assignment_type = assignment_type[0]
             
             if assignment_type == WeeklyContentType.programming_content_type.value:
                 problem_statement = ProgrammingAssignmentContent.query.with_entities(
@@ -314,7 +346,7 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
                     GradedProgrammingAssignmentContent.content_id == assignment_id
                 ).first()
 
-                if assignment_deadline < date.today():
+                if assignment_deadline < datetime.now():
                     response = self.programmingHintAI.getAlternateSolution(problem_statement, user_code)
                     hint = self.programmingHintAI.getHitsForProblem(problem_statement)
                     result = {"hint" : hint}
@@ -325,7 +357,6 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
                     return "Assignment Deadline is not over", 404
             else:
                 return "Invalid Assignment ID", 404
-        
         except Exception as e:
             return "Something went Wrong", 500
         

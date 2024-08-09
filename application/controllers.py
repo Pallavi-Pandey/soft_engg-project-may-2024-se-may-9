@@ -63,7 +63,7 @@ def log_in():
     if user and check_password_hash(user.password, password):
         login_user(user, remember=False)
         # Set the last_login_date
-        user.last_login_date = date.today()
+        user.last_login_date = datetime.now()
         db.session.commit()
 
         return make_response(jsonify({'token': user.get_auth_token()}), 200)
@@ -75,6 +75,8 @@ def log_in():
 @auth_required("token")
 def log_out():
     try:
+        current_user.last_login_date = datetime.now()
+        db.session.commit()
         logout_user()
         return make_response(jsonify({'message': 'Logout successful'}), 200) 
     except Exception as e:
