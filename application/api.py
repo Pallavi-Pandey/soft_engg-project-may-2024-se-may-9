@@ -358,7 +358,7 @@ class WeeklyAssignmentResource(Resource):
     
     def get(self, course_id, week_id, assignment_id):
         
-        assignment = models.WeeklyContent.query.filter_by(week_id=week_id, content_id=assignment_id).first()
+        assignment = WeeklyContent.query.filter_by(week_id=week_id, content_id=assignment_id).first()
 
         if not assignment:
             abort(404, message='No assignment found')
@@ -372,7 +372,7 @@ class WeeklyAssignmentResource(Resource):
 
             # if the assignment is non-programming, query through all the mcq questions avaiable for that content_id      
             if content_type in ['graded_assignment_content_type', 'assignment_content_type']:
-                questions = models.MCQ.query.filter_by(assignment_id=content_id).all()
+                questions = MCQ.query.filter_by(assignment_id=content_id).all()
                 question_list = []
                 
                 for question in questions:
@@ -382,30 +382,30 @@ class WeeklyAssignmentResource(Resource):
                     ques['question_score'] = question.question_score
                     
                     # query through all the options for a particular MCQ question
-                    options = models.MCQOption.query.filter_by(question_id = question.question_id).all()
+                    options = MCQOption.query.filter_by(question_id = question.question_id).all()
                     opts = []
                     for option in options:
                         opts.append({'option_id': option.option_id, 'option_text': option.option_text}) 
                     ques['options'] = opts
                     
-                    correct_option = models.MCQOption.query.filter_by(question_id = question.question_id, is_correct='True').first()
+                    correct_option = MCQOption.query.filter_by(question_id = question.question_id, is_correct='True').first()
                     ques['answer'] = correct_option.option_text
                     
                     # if the Non-programming assignment is graded, retrieving the deadline
                     if content_type == 'graded_assignment_content_type': 
-                        deadline = models.GradedAssignmentContent.query.filter_by(content_id=content_id).first()
+                        deadline = GradedAssignmentContent.query.filter_by(content_id=content_id).first()
                         ques['deadline'] = deadline.deadline
                     
                     question_list.append(ques)
 
             # querying the problem statement for a non graded programming assignment
             elif content_type == 'programming_content_type':
-                question = models.ProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
+                question = ProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
                 question_list = [{'problem_statement': question.problem_statement}]
 
             # querying the problem statement, deadline for a graded programming assignment
             elif content_type == 'graded_programming_content_type':
-                question = models.GradedProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
+                question = GradedProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
                 question_list = [{'problem_statement': question.problem_statement, 'deadline': question.deadline}]
                 
             else:
@@ -422,7 +422,7 @@ class WeeklyAssignmentResource(Resource):
         # if the assignment is graded, checking if the deadline has passed
         graded = ['graded_assignment_content_type', 'graded_programming_content_type']
         non_graded = ['assignment_content_type', 'programming_content_type']
-        assignment = models.WeeklyContent.query.filter_by(content_id=assignment_id).first()
+        assignment = WeeklyContent.query.filter_by(content_id=assignment_id).first()
 
         if assignment is None or assignment.content_type not in graded + non_graded:
             abort(404, message='Invalid assignment')
@@ -431,10 +431,10 @@ class WeeklyAssignmentResource(Resource):
             content_type = assignment.content_type
 
         if content_type in graded:
-            deadline_query = models.GradedAssignmentContent.query.filter_by(content_id=assignment_id).first()
+            deadline_query = GradedAssignmentContent.query.filter_by(content_id=assignment_id).first()
             
             if deadline_query is None:
-                deadline_query = models.GradedProgrammingAssignmentContent.query.filter_by(content_id=assignment_id).first()
+                deadline_query = GradedProgrammingAssignmentContent.query.filter_by(content_id=assignment_id).first()
                 
             deadline = deadline_query.deadline
                 
@@ -446,9 +446,9 @@ class WeeklyAssignmentResource(Resource):
             question_id = item['question_id']
             option_id = item['option_id']
 
-            question = models.MCQ.query.filter_by(question_id=question_id).first()
+            question = MCQ.query.filter_by(question_id=question_id).first()
 
-            options = models.MCQOption.query.filter_by(question_id=question_id).all()
+            options = MCQOption.query.filter_by(question_id=question_id).all()
             option_list = [option.option_id for option in options]
 
             # aborting if either the question_id or option_id is invalid
@@ -459,10 +459,10 @@ class WeeklyAssignmentResource(Resource):
                 abort(404, message='Option not found. Please ensure all option_id are valid')
 
             # correct option for the current question
-            correct_option = models.MCQOption.query.filter_by(question_id=question_id, is_correct='True').first()
+            correct_option = MCQOption.query.filter_by(question_id=question_id, is_correct='True').first()
 
             # adding or updating the student's current response
-            submission = models.StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, 
+            submission = StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, 
             assignment_id=assignment_id, question_id=question_id).first()
             
             if submission:
@@ -470,11 +470,11 @@ class WeeklyAssignmentResource(Resource):
                 submission.is_correct = option_id == correct_option
             
             else:
-                submission = models.StudentGradedMCQAssignmentResult(student_id=student_id, assignment_id=assignment_id, 
+                submission = StudentGradedMCQAssignmentResult(student_id=student_id, assignment_id=assignment_id, 
                 question_id=question_id, marked_option_id=option_id, is_correct = option_id == correct_option)
-                models.db.session.add(submission)
+                db.session.add(submission)
 
-            models.db.session.commit()
+            db.session.commit()
 
         return make_response(jsonify({"message": "Answers Recorded"}), 200)
 
@@ -486,7 +486,7 @@ class AssignmentAnswersResource(Resource):
     def get(self, course_id, week_id, assignment_id):
         
         student_id = current_user.student_id
-        student_answers = models.StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, assignment_id=assignment_id).all()
+        student_answers = StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, assignment_id=assignment_id).all()
         
         if len(student_answers) == 0:
             abort(404, message="No record found")
@@ -509,7 +509,7 @@ class WeakConceptsResource(Resource):
     def get(self, course_id):
         
         student_id = current_user.student_id
-        courses = models.Course.query.all()
+        courses = Course.query.all()
         course_list = [course.course_id for course in courses]
 
         if course_id not in course_list:
