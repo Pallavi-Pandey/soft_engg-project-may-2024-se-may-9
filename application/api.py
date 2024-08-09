@@ -41,28 +41,19 @@ class WeeklyContentResource(Resource):
             abort(404, message='No such course found')
         else:
             week = Week.query.filter_by(course_id=course_id).filter_by(week_id=week_id).first()
-            contents = WeeklyContent.query.filter_by(week_id=week.id).all()
+            contents = WeeklyContent.query.filter_by(week_id=week.week_id).all()
             if not contents:
                 abort(404, message='No content found for that week')
             else:    
-                videos = []
-                html_content = []
-
+                weekly_contents = []
                 for content in contents:
-                    if content.content_type == 'module_content_type':
-                        video = VideoModule.query.filter_by(content_id=content.id).first()
-                        videos.append({
-                            'video_id': video.video_id,
-                            'transcript_uri': video.transcript_uri,
-                            'tags_uri': video.tags_uri
-                        })
-                    elif content.content_type == 'html_page_content_type':
-                        course_page = CoursePageContent.query.filter_by(content_id=content.id).first()
-                        html_content.append({
-                            'html': course_page.html_content
-                        })
-            
-                return make_response(jsonify({'Videos': videos, 'HTML': html_content}), 201)
+                    weekly_contents.append({
+                        'title': content.title,
+                        'order': content.arrangement_order,
+                        'type': content.content_type
+                    })
+                
+                return make_response(jsonify({'Week': week.week_name, 'Contents': weekly_contents}), 200)
 
 api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
 
@@ -361,3 +352,173 @@ class ProgrammingAssistantAlternateSolutionAPI(Resource):
             return "Something went Wrong", 500
         
 api.add_resource(ProgrammingAssistantAlternateSolutionAPI, "/alter_sol/<int:assignment_id>/")
+
+
+class WeeklyAssignmentResource(Resource):
+    
+    def get(self, course_id, week_id, assignment_id):
+        
+        assignment = models.WeeklyContent.query.filter_by(week_id=week_id, content_id=assignment_id).first()
+
+        if not assignment:
+            abort(404, message='No assignment found')
+
+        else:
+
+            content_id = assignment.content_id 
+            title = assignment.title 
+            arrangement_order = assignment.arrangement_order 
+            content_type = assignment.content_type
+
+            # if the assignment is non-programming, query through all the mcq questions avaiable for that content_id      
+            if content_type in ['graded_assignment_content_type', 'assignment_content_type']:
+                questions = models.MCQ.query.filter_by(assignment_id=content_id).all()
+                question_list = []
+                
+                for question in questions:
+                    ques = {}
+                    ques['question_id'] = question.question_id 
+                    ques['question_text'] = question.question_text
+                    ques['question_score'] = question.question_score
+                    
+                    # query through all the options for a particular MCQ question
+                    options = models.MCQOption.query.filter_by(question_id = question.question_id).all()
+                    opts = []
+                    for option in options:
+                        opts.append({'option_id': option.option_id, 'option_text': option.option_text}) 
+                    ques['options'] = opts
+                    
+                    correct_option = models.MCQOption.query.filter_by(question_id = question.question_id, is_correct='True').first()
+                    ques['answer'] = correct_option.option_text
+                    
+                    # if the Non-programming assignment is graded, retrieving the deadline
+                    if content_type == 'graded_assignment_content_type': 
+                        deadline = models.GradedAssignmentContent.query.filter_by(content_id=content_id).first()
+                        ques['deadline'] = deadline.deadline
+                    
+                    question_list.append(ques)
+
+            # querying the problem statement for a non graded programming assignment
+            elif content_type == 'programming_content_type':
+                question = models.ProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
+                question_list = [{'problem_statement': question.problem_statement}]
+
+            # querying the problem statement, deadline for a graded programming assignment
+            elif content_type == 'graded_programming_content_type':
+                question = models.GradedProgrammingAssignmentContent.query.filter_by(content_id=content_id).first()
+                question_list = [{'problem_statement': question.problem_statement, 'deadline': question.deadline}]
+                
+            else:
+                abort(404, message='This content is not an assignment')
+
+        return make_response(jsonify({title: question_list}), 200)
+
+    @auth_required("token")
+    def put(self, course_id, week_id, assignment_id):
+
+        data = request.get_json()
+        student_id = current_user.student_id
+
+        # if the assignment is graded, checking if the deadline has passed
+        graded = ['graded_assignment_content_type', 'graded_programming_content_type']
+        non_graded = ['assignment_content_type', 'programming_content_type']
+        assignment = models.WeeklyContent.query.filter_by(content_id=assignment_id).first()
+
+        if assignment is None or assignment.content_type not in graded + non_graded:
+            abort(404, message='Invalid assignment')
+        
+        else:
+            content_type = assignment.content_type
+
+        if content_type in graded:
+            deadline_query = models.GradedAssignmentContent.query.filter_by(content_id=assignment_id).first()
+            
+            if deadline_query is None:
+                deadline_query = models.GradedProgrammingAssignmentContent.query.filter_by(content_id=assignment_id).first()
+                
+            deadline = deadline_query.deadline
+                
+            if deadline < datetime.now():
+                abort(404, message='Deadline has passed for this assignment')
+
+        # querying through the questions and student marked options
+        for item in data:
+            question_id = item['question_id']
+            option_id = item['option_id']
+
+            question = models.MCQ.query.filter_by(question_id=question_id).first()
+
+            options = models.MCQOption.query.filter_by(question_id=question_id).all()
+            option_list = [option.option_id for option in options]
+
+            # aborting if either the question_id or option_id is invalid
+            if not question:
+                abort(404, message='Question not found. Please ensure all question_id are valid')
+
+            if option_id not in option_list:
+                abort(404, message='Option not found. Please ensure all option_id are valid')
+
+            # correct option for the current question
+            correct_option = models.MCQOption.query.filter_by(question_id=question_id, is_correct='True').first()
+
+            # adding or updating the student's current response
+            submission = models.StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, 
+            assignment_id=assignment_id, question_id=question_id).first()
+            
+            if submission:
+                submission.marked_option_id = option_id
+                submission.is_correct = option_id == correct_option
+            
+            else:
+                submission = models.StudentGradedMCQAssignmentResult(student_id=student_id, assignment_id=assignment_id, 
+                question_id=question_id, marked_option_id=option_id, is_correct = option_id == correct_option)
+                models.db.session.add(submission)
+
+            models.db.session.commit()
+
+        return make_response(jsonify({"message": "Answers Recorded"}), 200)
+
+api.add_resource(WeeklyAssignmentResource, '/course_assignment/<int:course_id>/<int:week_id>/<int:assignment_id>')
+    
+class AssignmentAnswersResource(Resource):
+
+    @auth_required("token")
+    def get(self, course_id, week_id, assignment_id):
+        
+        student_id = current_user.student_id
+        student_answers = models.StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, assignment_id=assignment_id).all()
+        
+        if len(student_answers) == 0:
+            abort(404, message="No record found")
+
+        else:
+            marked_options = []
+            for student_answer in student_answers:
+                marked_option = {}
+                marked_option['question_id'] = student_answer.question_id 
+                marked_option['marked_option_id'] = student_answer.marked_option_id
+                marked_options.append(marked_option)
+
+            return make_response(jsonify({"Student Marked Answers": marked_options}), 200)
+
+api.add_resource(AssignmentAnswersResource, '/answers/<int:course_id>/<int:week_id>/<int:assignment_id>')
+    
+class WeakConceptsResource(Resource):
+
+    @auth_required("token")
+    def get(self, course_id):
+        
+        student_id = current_user.student_id
+        courses = models.Course.query.all()
+        course_list = [course.course_id for course in courses]
+
+        if course_id not in course_list:
+            abort(404, message="Course not found")
+
+        weak_concepts = []
+
+        weak_concepts = ['List of concepts where the student has underperformed for a course']
+
+        return make_response(jsonify({"weak_concepts": weak_concepts}), 200) 
+
+api.add_resource(WeakConceptsResource, '/weak_concepts/<int:course_id>')
