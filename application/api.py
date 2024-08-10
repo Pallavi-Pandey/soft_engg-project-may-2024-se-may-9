@@ -522,3 +522,72 @@ class WeakConceptsResource(Resource):
         return make_response(jsonify({"weak_concepts": weak_concepts}), 200) 
 
 api.add_resource(WeakConceptsResource, '/weak_concepts/<int:course_id>')
+
+# Mock Assignment APIs
+class WeeklyMockQuestionsAPI(Resource):
+
+    @auth_required("token")
+    def get(self, course_id, week_id, assignment_type):
+        if assignment_type not in ['theoretical', 'programming']:
+            return make_response(jsonify({"error": "Invalid assignment type. Choose either 'theoretical' or 'programming'."}), 400)
+
+        try:
+            if assignment_type == 'theoretical':
+                mock_questions = SummarizerAI.generate_theoretical_questions(course_id, week_id)
+            else:
+                mock_questions = ProgrammingAssistantAI.generate_programming_questions(course_id, week_id)
+            return make_response(jsonify(mock_questions), 200)
+        except Exception as e:
+            return make_response(jsonify({"error": str(e)}), 500)
+
+api.add_resource(WeeklyMockQuestionsAPI, '/mock_assignment/<int:course_id>/<int:week_id>/<string:assignment_type>')
+
+class CourseMockQuestionsAPI(Resource):
+
+    @auth_required("token")
+    def get(self, course_id):
+        try:
+            mock_questions = SummarizerAI.generate_course_questions(course_id)
+            return make_response(jsonify(mock_questions), 200)
+        except Exception as e:
+            return make_response(jsonify({"error": str(e)}), 500)
+        
+api.add_resource(CourseMockQuestionsAPI, '/mock_assignment/<int:course_id>')
+
+class MultiCourseMockQuestionsAPI(Resource):
+
+    @auth_required("token")
+    def post(self):
+        data = request.get_json()
+
+        course_ids = data.get('course_ids', [])
+        week_ids = data.get('week_ids', [])
+        topics = data.get('topics', [])
+
+        if not any([course_ids, week_ids, topics]):
+            return make_response(jsonify({"error": "At least one of course_ids, week_ids, or topics must be provided."}), 400)
+
+        try:
+            mock_questions = SummarizerAI.generate_multi_course_questions(course_ids, week_ids, topics)
+            return make_response(jsonify(mock_questions), 200)
+        except Exception as e:
+            return make_response(jsonify({"error": str(e)}), 500)
+        
+api.add_resource(MultiCourseMockQuestionsAPI, '/mock_assignment')
+
+class DeleteMockQuestionAPI(Resource):
+
+    @auth_required("token")
+    def delete(self, question_id):
+        question = MCQ.query.filter_by(question_id=question_id).first()
+        if not question:
+            return make_response(jsonify({"error": "Question not found."}), 404)
+
+        try:
+            db.session.delete(question)
+            db.session.commit()
+            return make_response(jsonify("Question Deleted"), 200)
+        except Exception as e:
+            return make_response(jsonify({"error": str(e)}), 500)
+        
+api.add_resource(DeleteMockQuestionAPI, '/mock_assignment/<int:question_id>')
