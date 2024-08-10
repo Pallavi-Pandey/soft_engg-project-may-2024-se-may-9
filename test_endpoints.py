@@ -365,3 +365,88 @@ def test_alternate_solution_post_invalid_assignment_wrong_content_type():
     response = requests.post("http://127.0.0.1:5000/api/program_hint/1", data = input_json, headers = {"Authentication-Token": "WyI3YmEzMzljYmI0MTg0MTBlOTRlNjE4NjhkMjg2ZGJjMCJd.ZrN53Q.OtFuU4rsGYZGWoOGH4hN8ExkOjk", "Content-Type": "application/json"})
     assert response.status_code == 404
 
+
+# Test case for getting weekly mock questions with invalid details
+def test_get_weekly_mock_questions_invalid():
+    response = requests.get(
+        "http://127.0.0.1:5000/api/mock_assignment/999/999/invalid_type",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 400
+    assert response.json()['message'] == 'Invalid assignment type or details'
+
+# Test case for getting weekly mock questions with valid details
+def test_get_weekly_mock_questions_valid():
+    response = requests.get(
+        "http://127.0.0.1:5000/api/mock_assignment/1/1/programming",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert len(response.json()) > 0
+
+# Test case for getting course mock questions with invalid course_id
+def test_get_course_mock_questions_invalid():
+    response = requests.get(
+        "http://127.0.0.1:5000/api/mock_assignment/999",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 404
+    assert response.json()['message'] == 'Course not found'
+
+# Test case for getting course mock questions with valid course_id
+def test_get_course_mock_questions_valid():
+    response = requests.get(
+        "http://127.0.0.1:5000/api/mock_assignment/1",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert len(response.json()) > 0
+
+# Test case for posting mock questions for multiple courses/weeks/topics with invalid data
+def test_post_mock_questions_invalid():
+    response = requests.post(
+        "http://127.0.0.1:5000/api/mock_assignment",
+        json={
+            "course_ids": [1],
+            "week_ids": [1],
+            "topics": ["invalid_topic"]
+        },
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 400
+    assert response.json()['message'] == 'Invalid input data'
+
+# Test case for posting mock questions for multiple courses/weeks/topics with valid data
+def test_post_mock_questions_valid():
+    response = requests.post(
+        "http://127.0.0.1:5000/api/mock_assignment",
+        json={
+            "course_ids": [1],
+            "week_ids": [1],
+            "topics": ["topic1"]
+        },
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert len(response.json()) > 0
+
+# Test case for deleting a question with an invalid question_id
+def test_delete_question_invalid():
+    response = requests.delete(
+        "http://127.0.0.1:5000/api/mock_assignment/999",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 404
+    assert response.json()['message'] == 'Question not found'
+
+# Test case for deleting a question with a valid question_id
+def test_delete_question_valid():
+    response = requests.delete(
+        "http://127.0.0.1:5000/api/mock_assignment/1",
+        headers={"Content-Type": "application/json", "Authentication-Token": "WyI3MDNmZTk0Mzk1Y2E0MWRmOWNmMjg5NWEyZWZjMGFiYSJd.ZrPT6g.lklE74sg3RU5S3mAfM4BDXjl_WY"}
+    )
+    assert response.status_code == 200
+    assert response.json()['message'] == 'Question Deleted'
