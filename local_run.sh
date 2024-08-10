@@ -27,6 +27,9 @@ fi
 
 # Set environment variable (you can customize this)
 export ENV=development
+echo "Please enter your Gemini API Key:"
+read -r GOOGLE_API_KEY
+export GOOGLE_API_KEY=$GOOGLE_API_KEY
 
 # Run your Python script (modify 'main.py' as needed)
 python main.py

@@ -1,6 +1,8 @@
-from application.database import db
+from flask_security import UserMixin, RoleMixin
 from enum import Enum
+from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()
 
 class Course(db.Model): 
     '''
@@ -30,11 +32,11 @@ class Week(db.Model):
 
     __tablename__ = 'week'
     week_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.course_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey(Course.course_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     week_name = db.Column(db.String(50), nullable=False)
-    begin_date = db.Column(db.Date, nullable=False)
+    begin_date = db.Column(db.DateTime(timezone=True), nullable=False)
 
-class Student(db.Model):
+class User(db.Model, UserMixin):
     '''
     A class to represent a student enrolled in a course.
 
@@ -45,8 +47,24 @@ class Student(db.Model):
 
     __tablename__ = 'student'
     student_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    student_name = db.Column(db.String(50), nullable=False)
-    last_login_date = db.Column(db.Date)
+    name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    active = db.Column(db.Boolean, nullable=False)
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=True)
+    last_login_date = db.Column(db.DateTime(timezone=True))
+    roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    name = db.Column(db.String(10), unique=True, nullable=False)
+    description = db.Column(db.String(50))
+
+class RolesUsers(db.Model):
+    __tablename__ = 'roles_users'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey(User.student_id))
+    role_id = db.Column(db.Integer(), db.ForeignKey(Role.id))
 
 class WeeklyContentType(Enum):
     '''
@@ -67,14 +85,14 @@ class WeeklyContent(db.Model):
     Attributes:
         content_id (int): Auto-generated integer that acts as an identifier in the table.
         week_id (int): The ID of the :class:`Week` to which the content belongs.
-        title (str): The title of the content. For example "Programmign Assignment 1", "Introduction to Variables in Python" etc.
+        title (str): The title of the content. For example "Programming Assignment 1", "Introduction to Variables in Python" etc.
         arrangement_order (int): The relative positioning in which the content is arranged in the :class:`Week`.
         content_type (str): The type of the content. It is an enum of :class:`WeeklyContentType`.
     '''
 
     __tablename__ = 'weekly_content'
     content_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    week_id = db.Column(db.Integer, db.ForeignKey('week.week_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    week_id = db.Column(db.Integer, db.ForeignKey(Week.week_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(500), nullable=False)
     arrangement_order = db.Column(db.Integer, nullable=False)
     content_type = db.Column(db.String(50), nullable=False)
@@ -98,8 +116,8 @@ class SavedMCQ(db.Model):
     __tablename__ = 'saved_mcq_question'
     question_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     question_text = db.Column(db.String(5000), nullable=False)
-    week_id = db.Column(db.Integer, db.ForeignKey('week.week_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    week_id = db.Column(db.Integer, db.ForeignKey(Week.week_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey(User.student_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
 
 class SavedMCQOption(db.Model):
     '''
@@ -114,7 +132,7 @@ class SavedMCQOption(db.Model):
     '''
     __tablename__ = 'saved_mcq_option'
     option_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('saved_mcq_question.question_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey(SavedMCQ.question_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     option_text = db.Column(db.String(500), nullable=False)
     is_correct = db.Column(db.Boolean, default=False)
 
@@ -130,9 +148,9 @@ class AssignmentScore(db.Model):
     '''
 
     __tablename__ = 'assignment_score'
-    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.course_id'), primary_key=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id'), primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey(User.student_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey(Course.course_id), primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id), primary_key=True)
     score = db.Column(db.Integer, nullable=False)
 
 class CoursePageContent(db.Model):
@@ -144,7 +162,7 @@ class CoursePageContent(db.Model):
         html_content (str): The HTML content of the course page.
     '''
     __tablename__ = 'course_page_content'
-    content_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    content_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
     html_content = db.Column(db.String)
 
 class GradedAssignmentContent(db.Model):
@@ -158,7 +176,7 @@ class GradedAssignmentContent(db.Model):
     '''
 
     __tablename__ = 'graded_assignment_content'
-    content_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True, nullable=False)
+    content_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True, nullable=False)
     deadline = db.Column(db.DateTime(timezone=True), nullable=False)
 
 class SubmittedAssignment(db.Model):
@@ -173,8 +191,8 @@ class SubmittedAssignment(db.Model):
 
     __tablename__ = 'submitted_assignment'
     submission_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'))
-    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'))
+    student_id = db.Column(db.Integer, db.ForeignKey(User.student_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
 
 class GradedProgrammingAssignmentContent(db.Model):
     '''
@@ -187,7 +205,7 @@ class GradedProgrammingAssignmentContent(db.Model):
         problem_statement (str): The problem statement for the assignment.
     '''
     __tablename__ = 'graded_programming_assignment_content'
-    content_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    content_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
     deadline = db.Column(db.DateTime(timezone=True), nullable=False)
     problem_statement = db.Column(db.String, nullable=False)
 
@@ -204,7 +222,7 @@ class MCQ(db.Model):
 
     __tablename__ = 'mcq_question'
     question_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     question_text = db.Column(db.String(5000), nullable=False)
     question_score = db.Column(db.Integer, nullable=False)
 
@@ -217,7 +235,7 @@ class ProgrammingAssignmentContent(db.Model):
         problem_statement (str): The problem statement for the assignment.
     '''
     __tablename__ = 'programming_assignment_content'
-    content_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    content_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
     problem_statement = db.Column(db.Text, nullable=False)
 
 class TestCase(db.Model):
@@ -236,7 +254,7 @@ class TestCase(db.Model):
 
     __tablename__ = 'programming_test_case'
     test_case_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id'), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id), nullable=False)
     input_text = db.Column(db.Text, nullable=False)
     expected_output = db.Column(db.Text, nullable=False)
     memory_limit = db.Column(db.Integer)
@@ -256,7 +274,7 @@ class VideoModule(db.Model):
     '''
 
     __tablename__ = 'video_module'
-    content_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    content_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
     video_id = db.Column(db.String(50), nullable=False)
     transcript_uri = db.Column(db.String(500), nullable=True)
     tags_uri = db.Column(db.String(500), nullable=True)
@@ -264,7 +282,7 @@ class VideoModule(db.Model):
 class MCQOption(db.Model):
     __tablename__ = 'mcq_option'
     option_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('mcq_question.question_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey(MCQ.question_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     option_text = db.Column(db.String(500), nullable=False)
     is_correct = db.Column(db.Boolean, default=False)
 
@@ -281,8 +299,8 @@ class StudentGradedMCQAssignmentResult(db.Model):
     '''
 
     __tablename__="student_graded_mcq_assignment_result"
-    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('weekly_content.content_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('mcq_question.question_id', onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
-    marked_option_id = db.Column(db.Integer, db.ForeignKey('mcq_option.option_id', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey(User.student_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey(WeeklyContent.content_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey(MCQ.question_id, onupdate='CASCADE', ondelete='CASCADE'), primary_key=True)
+    marked_option_id = db.Column(db.Integer, db.ForeignKey(MCQOption.option_id, onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
     is_correct = db.Column(db.Boolean, nullable=False)

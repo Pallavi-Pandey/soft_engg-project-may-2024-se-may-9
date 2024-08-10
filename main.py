@@ -1,16 +1,14 @@
-from flask_restful import Api
+from application.models import db, User, Role
 from application.config import LocalDevelopmentConfig
-from application.database import db
-from application.models import Student
+from application.api import api
 from flask import Flask, jsonify
+from flask_security import SQLAlchemyUserDatastore, Security
 import os
 
-app = None
-api = None
 
 def create_app():
-    # creaate and configure the app
-    app = Flask(__name__, template_folder = "templates")
+    # create and configure the app
+    app = Flask(__name__, template_folder = "templates", static_folder="static")
     
     if os.getenv("ENV", "development") == "production":
         raise Exception("Currently no production config is setup.")
@@ -21,27 +19,22 @@ def create_app():
 
     # Initialize SQLAlchemy after creating the app
     db.init_app(app)
-    api = Api(app)
-    return app, api
+       
+    api.init_app(app)
 
-app, api = create_app()
-    
-@app.route("/")
-def hello_world():
-  '''
-  This is a simple endpoint to test the database.
-  '''
-  students = Student.query.all()
-  student_list = [
-     {
-        "id": student.student_id,
-        "name": student.student_name,
-     }
-     for student in students
-  ]
+    datastore = SQLAlchemyUserDatastore(db, User, Role)
+    security = Security(app, datastore)
 
-  return jsonify({"Students: ": student_list})
+    with app.app_context():
+      db.create_all()  # Creates tables in case there aren't any. If the instance already exists, does nothing.
+      datastore.find_or_create_role(name="Student", description="The standard user of this course portal.")
+      db.session.commit()
+      import application.controllers
+
+    return app, api, datastore, security
+
+app, api, datastore, security = create_app()
 
 if __name__ == "__main__":
   # Run the flask app
-  app.run(debug=True, host="0.0.0.0", port = 8080)
+  app.run(debug=True)
