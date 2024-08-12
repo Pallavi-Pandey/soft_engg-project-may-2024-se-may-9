@@ -6,7 +6,8 @@ export default {
                 <li class="nav-item" @click="selectItem('AboutCourse')">About the Course</li>
                 <li class="nav-item"><a class="nav-link" href="#">General Instructions</a></li>
                 <li class="nav-item" @click="selectItem('LectureContent')">Week 1</li>
-                <li class="nav-item" @click="selectItem('GradedAssignment')">Graded Assignment</li>
+                <li class="nav-item" @click="selectItem('GradedAssignment')"><a>Graded Assignment</a></li>
+                <li class="nav-item" @click="selectItem('ProgrammingAssignment')"><a>Programming Assignment</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Week 2</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Week 3</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Week 4</a></li>

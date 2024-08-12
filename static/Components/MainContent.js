@@ -1,6 +1,7 @@
 import AboutCourse from "./AboutCourse.js";
 import LectureContent from "./LectureContent.js";
 import GradedAssignment from "./GradedAssignment.js";
+import ProgrammingAssignment from "./ProgrammingAssignment.js";
 
 export default {
     props: {
@@ -12,14 +13,16 @@ export default {
     components: {
         AboutCourse,
         LectureContent,
-        GradedAssignment
+        GradedAssignment,
+        ProgrammingAssignment
     },
     computed: {
         componentToShow() {
             return {
                 AboutCourse,
                 LectureContent,
-                GradedAssignment
+                GradedAssignment,
+                ProgrammingAssignment
             }[this.currentComponent] || AboutCourse; // Fallback to AboutCourse
         }
     },
