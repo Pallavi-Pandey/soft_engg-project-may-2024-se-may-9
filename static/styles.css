@@ -1,0 +1,23 @@
+*{
+    text-decoration: none;
+    list-style: none;
+}
+a{
+    text-decoration: none;
+}
+.course-cards-container {
+    display: flex; 
+  }
+
+.card{
+    margin: 0.4em .4em;
+    width: calc(100/3);
+}
+
+.fixed-sidebar{
+    background-color: #49516C;
+}
+
+nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
+    box-shadow: #49516C;
+}

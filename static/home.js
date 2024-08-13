@@ -1,3 +1,5 @@
+import CourseCard from "./Components/CourseCard.js";
+
 export default {
     template: `
       <div v-if="user_found">
@@ -7,6 +9,11 @@ export default {
             <button class="btn btn-primary" @click="$router.push('/course_info')">Test Course Info Retrieval</button>
             <button class="btn btn-secondary" @click="$router.push('/weekly_content')">Test Weekly Content Retrieval</button>
             <button @click="log_out" class="btn btn-danger me-2">Log Out</button>
+            <div class="course-cards-container">
+              <CourseCard />
+              <CourseCard />
+              <CourseCard />
+            </div>
           </div>
         </div>
       </div>
@@ -20,6 +27,9 @@ export default {
         </div>
       </div>
     `,
+    components: {
+      CourseCard
+    },
     data() {
       return {
         user_found: true, // Whether logged-in user could be retrieved

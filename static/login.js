@@ -58,7 +58,7 @@ export default {
 
         if (response.ok) {
             localStorage.setItem("authToken", responseData.token);
-            this.$router.push("/placeholder_home");
+            this.$router.push("/home");
         } else {
         this.errorMessage = responseData.error_message;
         }

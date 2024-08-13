@@ -32,7 +32,7 @@ read -r GOOGLE_API_KEY
 export GOOGLE_API_KEY=$GOOGLE_API_KEY
 
 # Run your Python script (modify 'main.py' as needed)
-python main.py
+python3 main.py
 
 # Deactivate the virtual environment
 
