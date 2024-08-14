@@ -134,7 +134,6 @@ class WeakConceptsRecommender:
             that were incorrectly aswered. You have to identify the concepts or topics that student needs to work on by
             interpreting the questions''',
 )
-    genai.configure(api_key="AIzaSyAb2jmHNyBTlIbZdDSDVgwf0cR6pPvM2Qo")
 
     def getconcepts(self, questions):
         response = self.model.generate_content("{}".format(questions))
