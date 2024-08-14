@@ -35,7 +35,7 @@ api.add_resource(CourseResource, '/courses/<int:course_id>')
 class WeeklyContentResource(Resource):
 
     @auth_required("token")
-    def get(self, course_id, week_id, content_id=None):
+    def get(self, course_id, week_id):
         course = Course.query.filter_by(course_id=course_id).first()
         if not course:
             abort(404, message='No such course found')
@@ -48,6 +48,7 @@ class WeeklyContentResource(Resource):
                 weekly_contents = []
                 for content in contents:
                     weekly_contents.append({
+                        'id': content.content_id,
                         'title': content.title,
                         'order': content.arrangement_order,
                         'type': content.content_type
