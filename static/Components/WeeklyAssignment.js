@@ -41,6 +41,7 @@ export default {
         console.log(data);
         this.questions = data['Graded Assignment 1']; // Adjust based on the actual response structure
       } catch (error) {
+        console.log(error)
         this.errorMessage = error.message;
       }
     },
@@ -55,7 +56,7 @@ export default {
           question_id,
           option_id: this.answers[question_id]
         }));
-        
+        console.log(answersArray)
         const response = await fetch(`/api/course_assignment/${this.weekId}/${this.assignmentId}`, {
           method: 'POST',
           headers: {
@@ -95,7 +96,7 @@ export default {
           @answer-selected="handleAnswerSelected" 
         />
       </div>
-      <button @click="submitAssignmentAnswers()" class="btn btn-primary mt-3">Submit Answers</button>
+      <button @click="submitAssignmentAnswers" class="btn btn-primary mt-3">Submit Answers</button>
       <br>
     </div>
   `

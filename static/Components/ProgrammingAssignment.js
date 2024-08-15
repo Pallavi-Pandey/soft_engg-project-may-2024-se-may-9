@@ -55,6 +55,7 @@ YES`,
       options: ["Python3"],
       selectedLanguage: '', // Define selectedLanguage in the data object
       code: '', // This will hold the content of the Ace Editor
+      isLoading: false,
       hint: '', // This will store the hint from the API
       editorOptions: {
         mode: 'python', // Specify the mode, e.g., 'python'
@@ -66,32 +67,44 @@ YES`,
   },
   methods: {
     async fetchAssignmentData() {
-      
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
           throw new Error('No authentication token found');
         }
-        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`,{
+  
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': token
           }
         });
+  
         if (!response.ok) {
           throw new Error('Failed to fetch assignment data');
         }
+  
         const data = await response.json();
+        console.log(data);
+  
+        // Assuming the response has a structure like: { "PPA 1 - Not Graded": [ { question_id: ..., question_text: ..., options: [...] } ] }
         this.assignmentTitle = Object.keys(data)[0];
         this.questions = data[this.assignmentTitle];
-        if (this.questions.length > 0 && this.questions[0].deadline) {
-          this.deadline = new Date(this.questions[0].deadline);
+        console.log(this.questions)
+        // Update the question and deadline based on the fetched data
+        if (this.questions && this.questions.length > 0) {
+          this.question = this.questions[0]['problem_statement']; // Assuming you want to display the first question
+          if (this.questions[0].deadline) {
+            this.deadline = new Date(this.questions[0].deadline);
+          }
         }
       } catch (error) {
         this.errorMessage = error.message;
       }
     },
+
     async fetchHint() {
+      this.isLoading = true;
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
@@ -113,6 +126,8 @@ YES`,
         this.hint = data.hint;
       } catch (error) {
         this.errorMessage = error.message;
+      }finally{
+        this.isLoading=false;
       }
     },
     updateAnswer(answer) {
@@ -170,7 +185,6 @@ YES`,
   mounted() {
     // Fetch assignment data and hint when component is mounted
     this.fetchAssignmentData();
-    this.fetchHint();
     
     // Initialize Ace Editor when component is mounted
     this.$nextTick(() => {
@@ -200,10 +214,17 @@ YES`,
       <!-- Ace Editor HTML -->
       <div id="editor" style="height: 400px; width: 100%;">{{ code }}</div>
 
-      <!-- Display Hint -->
-      <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
-        Hint: {{ hint }}
+      <!-- Get Hint -->
+      <div>
+      <button @click="fetchHint" class="btn btn-primary mt-3">Get Hint</button>
+        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your hint...
+        </div>
+        <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
+          Hint: {{ hint }}
+        </div>
       </div>
+      
 
       <!-- Submit button -->
       <div>
