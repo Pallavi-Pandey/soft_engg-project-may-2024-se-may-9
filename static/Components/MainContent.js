@@ -1,6 +1,6 @@
 import AboutCourse from "./AboutCourse.js";
 import LectureContent from "./LectureContent.js";
-import GradedAssignment from "./GradedAssignment.js";
+import WeeklyAssignment from "./WeeklyAssignment.js";
 import ProgrammingAssignment from "./ProgrammingAssignment.js";
 
 export default {
@@ -13,7 +13,7 @@ export default {
     components: {
         AboutCourse,
         LectureContent,
-        GradedAssignment,
+        WeeklyAssignment,
         ProgrammingAssignment
     },
     computed: {
@@ -21,7 +21,7 @@ export default {
             return {
                 AboutCourse,
                 LectureContent,
-                GradedAssignment,
+                WeeklyAssignment,
                 ProgrammingAssignment
             }[this.currentComponent] || AboutCourse; // Fallback to AboutCourse
         }
