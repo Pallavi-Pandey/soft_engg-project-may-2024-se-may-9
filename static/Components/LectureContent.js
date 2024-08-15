@@ -1,4 +1,11 @@
 export default {
+    data() {
+        return {
+            contentId: 1, // Replace with the actual content ID
+            summary: '',
+            errorMessage: ''
+        };
+    },
     template: `
     <div>
         <h2>
@@ -13,12 +20,16 @@ export default {
             web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
         </iframe>
         <br>
-        <button @click="generate_summmary" class="btn btn-primary me-2">Generate Summary</button>
+        <button @click="generateSummary" class="btn btn-primary me-2">Generate Summary</button>
+        <div v-if="summary" class="mt-3">
+            <h3>Lecture Summary</h3>
+            <p>{{ summary }}</p>
+        </div>
+        <div v-if="errorMessage" class="alert alert-danger mt-3">
+            {{ errorMessage }}
+        </div>
     </div>
     `,
-    mounted() {
-        this.renderVideo();
-    },
     methods: {
         renderVideo() {
             const iframe = this.$refs.videoIframe;
@@ -27,8 +38,27 @@ export default {
             }
         },
 
-        generate_summary(){
-            //Function that generates summary
+        async generateSummary() {
+            try {
+                const response = await fetch(`/summary/module/${this.contentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authentication-Token': 'your-auth-token', // Replace with your actual authentication token
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                this.summary = data.summary;
+            } catch (error) {
+                this.errorMessage = error.message || 'Failed to generate summary.';
+            }
         }
-    }
+    },
+    mounted() {
+        this.renderVideo();
+    },
 };
