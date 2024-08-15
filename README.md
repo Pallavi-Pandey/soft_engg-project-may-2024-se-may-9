@@ -8,7 +8,7 @@
 
 # Local Development Run
 - Run `local_run.sh`
-Provide a valid Google Gemini API key. It will start the app in the development enviroment. (Get you Gemini API key here for free.)[https://aistudio.google.com/app/apikey]
+Provide a valid Google Gemini API key. It will start the app in the development enviroment. [Get you Gemini API key here for free.](https://aistudio.google.com/app/apikey).
 
 # Folder Structure
 
