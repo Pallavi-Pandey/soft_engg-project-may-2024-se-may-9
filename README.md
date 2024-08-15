@@ -7,7 +7,8 @@
 - Run `local_setup.sh`
 
 # Local Development Run
-- `local_run.sh` It will start the flask app in `development`. Suited for local development
+- Run `local_run.sh`
+Provide a valid Google Gemini API key. It will start the app in the development enviroment. [Get you Gemini API key here for free.](https://aistudio.google.com/app/apikey).
 
 # Folder Structure
 

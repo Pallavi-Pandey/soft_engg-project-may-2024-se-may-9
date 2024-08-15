@@ -14,8 +14,7 @@ export default {
         return {
             selectedComponent: 'AboutCourse',  // Default component
             courseTitle: '',  // Store the course title
-            userEmail: '',  // Store the user email
-            courseId: '' // Initialize courseId
+            userEmail: ''  // Store the user email
         };
     },
     methods: {
@@ -31,7 +30,6 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('User Email:', data.email);  // Debugging output
                     this.userEmail = data.email;  // Set the user email from the response
                 } else {
                     console.error('Failed to fetch user email');
@@ -42,9 +40,6 @@ export default {
         },
         async fetchCourseTitle() {
             try {
-                if (this.courseId === '') {
-                    this.courseId = 1; // Default course ID
-                }
                 const response = await fetch(`/api/courses/${this.courseId}`, {
                     headers: {
                         'Authentication-Token': localStorage.getItem('authToken')
@@ -53,7 +48,6 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Course Title:', data.course_title);  // Debugging output
                     this.courseTitle = data.course_title;  // Set the course title from the response
                 } else {
                     console.error('Failed to fetch course title');
@@ -61,11 +55,6 @@ export default {
             } catch (error) {
                 console.error('Error fetching course title:', error);
             }
-        },
-        updateContent(content) {
-            // Handle the content update here
-            console.log('Content updated:', content);
-            this.selectedComponent = content; // Example of how to use the content
         }
     },
     created() {
