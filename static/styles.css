@@ -14,10 +14,22 @@ a{
     width: calc(100/3);
 }
 
-.fixed-sidebar{
+/* .fixed-sidebar{
     background-color: #49516C;
-}
+} */
 
 nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     box-shadow: #49516C;
+}
+
+.fixed-sidebar {
+    background-color: #49516C;
+    height: auto;
+}
+.nav-item {
+    margin: 10px 0; /* Add spacing between items */
+}
+
+.sidebar-icon {
+    margin-bottom: 5px; /* Space between icon and text */
 }

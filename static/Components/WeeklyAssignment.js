@@ -7,17 +7,14 @@ export default {
   props: {
     courseId: {
       type: Number,
-      required: true,
       default: 1, // Default value for courseId
     },
     weekId: {
       type: Number,
-      required: true,
       default: 2, // Default value for weekId
     },
     assignmentId: {
       type: Number,
-      required: true,
       default: 16, // Default value for assignmentId
     },
   },
@@ -30,7 +27,12 @@ export default {
   methods: {
     async fetchAssignmentData() {
       try {
-        const response = await fetch(`/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`);
+        const response = await fetch(`/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`,{
+          method: 'GET',
+          headers: {
+            'Authentication-Token' : localStorage.getItem('authToken')
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch assignment data');
         }
