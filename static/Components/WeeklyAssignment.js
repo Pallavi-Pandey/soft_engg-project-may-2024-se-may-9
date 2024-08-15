@@ -96,6 +96,7 @@ export default {
         />
       </div>
       <button @click="submitAssignmentAnswers()" class="btn btn-primary mt-3">Submit Answers</button>
+      <br>
     </div>
   `
 };

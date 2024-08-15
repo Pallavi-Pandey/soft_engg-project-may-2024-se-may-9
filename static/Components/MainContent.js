@@ -27,6 +27,8 @@ export default {
         }
     },
     template: `
+    <div class="main-course-content">
         <component :is="componentToShow" />
+    </div>
     `
 };
