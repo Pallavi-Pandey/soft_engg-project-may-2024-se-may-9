@@ -14,7 +14,8 @@ export default {
         <li class="nav-item">
           <a class="nav-link dropdown-toggle" href="#" id="week1Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 1</a>
           <ul class="dropdown-menu" aria-labelledby="week1Dropdown">
-            <li><a class="dropdown-item" href="#" @click="selectItem('LectureContent')">Graded Assignment</a></li>
+            <li><a class="dropdown-item" href="#" @click="selectItem('LectureContent')">Lecture1</a></li>
+            <li><a class="dropdown-item" href="#" @click="selectItem('WeeklyAssignment')">Graded Assignment</a></li>
             <li><a class="dropdown-item" href="#" @click="selectItem('ProgrammingAssignment')">Programming Assignment</a></li>
           </ul>
         </li>
