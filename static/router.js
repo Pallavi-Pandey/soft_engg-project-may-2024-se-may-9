@@ -14,6 +14,7 @@ const routes = [
     { path: '/home', component: home },
     { path: '/weekly_content', component: weekly_content },
     { path: '/course_page/:course_id?', component: course_page, props:true }
+    
 ]
 
 export default new VueRouter({

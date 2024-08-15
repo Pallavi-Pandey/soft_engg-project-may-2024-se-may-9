@@ -1,10 +1,10 @@
 import CourseCard from "./Components/CourseCard.js";
-import Navbar from './Components/Navbar.js'
+import Navbar from './Components/Navbar.js';
 
 export default {
     template: `
     <div>
-      <Navbar :userEmail="userEmail"/>
+      <Navbar :userEmail="userEmail" />
       <div v-if="user_found">
         <div class="text-center" style="padding-top:150px">
           <h1 class="mb-5 display-4">Welcome, {{ name }}!</h1>
@@ -40,6 +40,7 @@ export default {
         user_found: true, // Whether logged-in user could be retrieved
         name: '', // Name of currently logged-in user
         userId: 0, // ID of currently logged-in user
+        userEmail: '', // Email of currently logged-in user
         token: localStorage.getItem('authToken') // Authentication token
       };
     },
@@ -56,8 +57,9 @@ export default {
           const userData = await response.json();
           this.name = userData.name;
           this.userId = userData.student_id;
+          this.userEmail = userData.email; // Set the user's email
         } else {
-          user_found = false; // User couldn't be retrieved
+          this.user_found = false; // User couldn't be retrieved
           console.error('Failed to fetch user data');
         }
       },
@@ -87,3 +89,4 @@ export default {
       this.fetchUserData();
     }
 };
+
