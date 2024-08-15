@@ -1,7 +1,7 @@
 export default {
     data() {
         return {
-            contentId: 1, // Replace with the actual content ID
+            contentId: 2, // Replace with the actual content ID
             summary: '',
             errorMessage: ''
         };
@@ -40,10 +40,10 @@ export default {
 
         async generateSummary() {
             try {
-                const response = await fetch(`/summary/module/${this.contentId}`, {
+                const response = await fetch(`/api/summary/module/${this.contentId}`, {
                     method: 'GET',
                     headers: {
-                        'Authentication-Token': 'your-auth-token', // Replace with your actual authentication token
+                        'Authentication-Token': localStorage.getItem('authToken'), // Replace with your actual authentication token
                     },
                 });
                 

@@ -33,3 +33,28 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
 .sidebar-icon {
     margin-bottom: 5px; /* Space between icon and text */
 }
+
+.main-content {
+    background: linear-gradient(135deg, #CA8332, #A1342C);
+    padding: 100px 20px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-group {
+    margin-top: 20px;
+}
+.btn-primary {
+    background-color: #0056b3;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  .btn-primary:hover {
+    background-color: #004494;
+  }

@@ -1,12 +1,15 @@
+import Navbar from "./Components/Navbar.js";
 export default {
     template:`
-      <div class="container align-items-center" style="margin: 0 auto; padding-top: 100px">
+    <div>
+    <Navbar />
+      <div class="main-content">
+      <div class="container align-items-center">
         <div class="row justify-content-center">
           <div class="col-md-6 col-lg-4">
-
             <div class="card shadow-sm">
               <div class="card-body">
-                <h2 class="mb-3" style="font-size: 28px; font-weight: bold; color: #007bff; text-align: center; padding-top:15px">Sign Up</h2>
+                <h2 class="mb-3" style="font-size: 28px; font-weight: bold; color: #007bff; text-align: center; padding-top: 15px">Sign Up</h2>
                 
                 <form @submit.prevent="submitForm">
                   <div class="mb-3">
@@ -43,14 +46,19 @@ export default {
                 
                 <div class="text-center mt-3">
                   Already have an account?
-                  <router-link to="/log_in" class="mt-3">Log in here.</router-link>
+                  <router-link to="/log_in" class="mt-3 link-primary">Log in here.</router-link>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+    </div>
     `,
+    components:{
+      Navbar
+    },
     data() {
       return {
         name: "", // Name of new user
