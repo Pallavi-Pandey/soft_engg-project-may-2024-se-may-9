@@ -22,7 +22,8 @@ export default {
   data() {
     return {
       questions: [],
-      errorMessage: ''
+      errorMessage: '',
+      answers:[]
     };
   },
   methods: {
@@ -48,38 +49,50 @@ export default {
     handleAnswerSelected({ question_id, option_id }) {
       // Handle the selected answer here (e.g., store it or send it to the server)
       console.log(`Question ID: ${question_id}, Selected Option ID: ${option_id}`);
+      this.answers.push({question_id, option_id})
     },
     async submitAssignmentAnswers() {
       try {
-        // Prepare the payload
-        const answersArray = Object.keys(this.answers).map(question_id => ({
-          question_id,
-          option_id: this.answers[question_id]
-        }));
-        console.log(answersArray)
-        const response = await fetch(`/api/course_assignment/${this.weekId}/${this.assignmentId}`, {
+        console.log(this.answers); // Log the payload for debugging
+    
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authentication-Token': localStorage.getItem('authToken')
+            'Authentication-Token': localStorage.getItem('authToken') // Ensure the token is included
           },
-          body: JSON.stringify({ answers: answersArray })
+          body: JSON.stringify(this.answers) // Sending the array of answers directly
         });
-        
+    
+        // Check if the response is not ok
         if (!response.ok) {
-          throw new Error('Failed to submit assignment answers');
+          // Attempt to parse error response as JSON
+          let errorMessage = 'Unknown error';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.ErrorMsg || 'Failed to submit assignment answers';
+          } catch (jsonError) {
+            // If JSON parsing fails, read raw response text
+            errorMessage = await response.text();
+          }
+          throw new Error(errorMessage);
         }
-        
+    
+        // Parse the success response
         const result = await response.json();
-        this.successMessage = result; // Success message from the API
+        this.successMessage = result.message || 'Assignment submitted successfully!'; // Capture success message
         console.log('Assignment submitted:', result);
-        
-        // Optionally clear the answers or redirect the user
-        this.answers = {};
+    
+        // Optionally clear the answers or redirect the user after submission
+        this.answers = [];
       } catch (error) {
-        this.errorMessage = error.message;
+        this.errorMessage = error.message; // Handle and display error message
+        console.error('Error submitting assignment:', error); // Log the full error for debugging
       }
     }
+    
+    
+    
 
   },
   mounted() {
