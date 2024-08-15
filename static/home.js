@@ -1,7 +1,10 @@
 import CourseCard from "./Components/CourseCard.js";
+import Navbar from './Components/Navbar.js'
 
 export default {
     template: `
+    <div>
+      <Navbar :userEmail="userEmail"/>
       <div v-if="user_found">
         <div class="text-center" style="padding-top:150px">
           <h1 class="mb-5 display-4">Welcome, {{ name }}!</h1>
@@ -26,9 +29,11 @@ export default {
           <button class="btn btn-primary" @click="$router.push('/signup')">Sign Up</button>
         </div>
       </div>
+    </div>
     `,
     components: {
-      CourseCard
+      CourseCard,
+      Navbar
     },
     data() {
       return {

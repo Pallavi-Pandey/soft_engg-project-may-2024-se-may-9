@@ -14,7 +14,8 @@ export default {
         return {
             selectedComponent: 'AboutCourse',  // Default component
             courseTitle: '',  // Store the course title
-            userEmail: ''  // Store the user email
+            userEmail: '',  // Store the user email
+            courseId: '' // Initialize courseId
         };
     },
     methods: {
@@ -41,6 +42,9 @@ export default {
         },
         async fetchCourseTitle() {
             try {
+                if (this.courseId === '') {
+                    this.courseId = 1; // Default course ID
+                }
                 const response = await fetch(`/api/courses/${this.courseId}`, {
                     headers: {
                         'Authentication-Token': localStorage.getItem('authToken')
@@ -57,6 +61,11 @@ export default {
             } catch (error) {
                 console.error('Error fetching course title:', error);
             }
+        },
+        updateContent(content) {
+            // Handle the content update here
+            console.log('Content updated:', content);
+            this.selectedComponent = content; // Example of how to use the content
         }
     },
     created() {

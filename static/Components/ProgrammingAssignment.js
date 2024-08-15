@@ -7,17 +7,14 @@ export default {
   props: {
     courseId: {
       type: Number,
-      required: true,
       default: 1
     },
     weekId: {
       type: Number,
-      required: true,
       default: 2
     },
     assignmentId: {
       type: Number,
-      required: true,
       default: 17
     }
   },
