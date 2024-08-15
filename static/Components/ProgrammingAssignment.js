@@ -72,7 +72,7 @@ YES`,
         if (!token) {
           throw new Error('No authentication token found');
         }
-        const response = await fetch(`/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`,{
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`,{
           method: 'GET',
           headers: {
             'Authentication-Token': token
@@ -98,7 +98,7 @@ YES`,
           throw new Error('No authentication token found');
         }
 
-        const response = await fetch(`/program_hint/${this.assignmentId}`, {
+        const response = await fetch(`/api/program_hint/${this.assignmentId}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': token // Use the token from localStorage
@@ -126,7 +126,7 @@ YES`,
     async submitAssignment() {
       console.log(this.code);
       try {
-        const response = await fetch(`/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

@@ -1,49 +1,47 @@
+// QuestionComponent.js
 export default {
     props: {
       question: {
         type: Object,
-        required: true,
+        required: true
       },
       index: {
         type: Number,
-        required: true,
-      },
-    },
-    data() {
-      return {
-        selectedOption: null,
-      };
+        required: true
+      }
     },
     methods: {
-      onOptionChange() {
+      selectOption(optionId) {
+        // Emit the selected option ID to the parent component
         this.$emit('answer-selected', {
           question_id: this.question.question_id,
-          option_id: this.selectedOption,
+          option_id: optionId
         });
-      },
+      }
     },
     template: `
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Question {{ index + 1 }}</h5>
-          <p class="card-text">{{ question.question_text }}</p>
-          <div v-for="option in question.options" :key="option.option_id">
-            <div class="form-check">
-              <input 
-                class="form-check-input" 
-                type="radio" 
-                :id="'option-' + option.option_id" 
-                :value="option.option_id" 
-                v-model="selectedOption"
-                @change="onOptionChange"
-              />
-              <label class="form-check-label" :for="'option-' + option.option_id">
-                {{ option.option_text }}
-              </label>
-            </div>
-          </div>
+      <div class="question-container">
+        <h4>Question {{ index + 1 }}:</h4>
+        <p>{{ question.question_text }}</p>
+        <div v-for="option in question.options" :key="option.option_id" class="option">
+          <input 
+            type="radio" 
+            :id="option.option_id" 
+            :name="'question-' + question.question_id" 
+            :value="option.option_id" 
+            @change="selectOption(option.option_id)"
+          />
+          <label :for="option.option_id">{{ option.option_text }}</label>
         </div>
       </div>
     `,
+    style: `
+      .question-container {
+        margin-bottom: 20px;
+      }
+      .option {
+        margin-bottom: 10px;
+      }
+    `
   };
   
