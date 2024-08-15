@@ -3,7 +3,7 @@ from flask import current_app as app, request, jsonify, make_response
 from flask_security import auth_required, current_user
 from flask_restful import Resource, Api, abort, reqparse, fields, marshal_with
 from application.models import *
-from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI
+from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI, WeakConceptsRecommender
 
 api = Api(prefix='/api')
 
@@ -357,6 +357,7 @@ api.add_resource(ProgrammingAssistantAlternateSolutionAPI, "/alter_sol/<int:assi
 
 class WeeklyAssignmentResource(Resource):
     
+    @auth_required("token")
     def get(self, course_id, week_id, assignment_id):
         
         assignment = WeeklyContent.query.filter_by(week_id=week_id, content_id=assignment_id).first()
@@ -389,7 +390,7 @@ class WeeklyAssignmentResource(Resource):
                         opts.append({'option_id': option.option_id, 'option_text': option.option_text}) 
                     ques['options'] = opts
                     
-                    correct_option = MCQOption.query.filter_by(question_id = question.question_id, is_correct='True').first()
+                    correct_option = MCQOption.query.filter_by(question_id = question.question_id, is_correct='true').first()
                     ques['answer'] = correct_option.option_text
                     
                     # if the Non-programming assignment is graded, retrieving the deadline
@@ -411,8 +412,14 @@ class WeeklyAssignmentResource(Resource):
                 
             else:
                 abort(404, message='This content is not an assignment')
-
-        return make_response(jsonify({title: question_list}), 200)
+        
+        student_id = current_user.student_id
+        current_score = AssignmentScore.query.filter_by(student_id=student_id, assignment_id=assignment_id).first()
+        assignment_score = 0
+        if current_score:
+            assignment_score = round(current_score.score*100,2)
+        
+        return make_response(jsonify({title: question_list, "assingment_score": "{}%".format(assignment_score)}), 200)
 
     @auth_required("token")
     def put(self, course_id, week_id, assignment_id):
@@ -460,7 +467,7 @@ class WeeklyAssignmentResource(Resource):
                 abort(404, message='Option not found. Please ensure all option_id are valid')
 
             # correct option for the current question
-            correct_option = MCQOption.query.filter_by(question_id=question_id, is_correct='True').first()
+            correct_option = MCQOption.query.filter_by(question_id=question_id, is_correct='true').first().option_id
 
             # adding or updating the student's current response
             submission = StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, 
@@ -476,6 +483,31 @@ class WeeklyAssignmentResource(Resource):
                 db.session.add(submission)
 
             db.session.commit()
+
+        # Calculate score
+        total_score = 0
+        questions = MCQ.query.filter_by(assignment_id=assignment_id).all()
+        for question in questions: total_score += question.question_score
+
+        student_score = 0
+        student_questions = StudentGradedMCQAssignmentResult.query.filter_by(student_id=student_id, assignment_id=assignment_id, is_correct=1).all()
+        correct_question_ids = [question.question_id for question in student_questions]
+        all_questions = MCQ.query.all()
+        for ques_id in correct_question_ids:
+            question_score = MCQ.query.filter_by(question_id=ques_id).first().question_score
+            student_score += question_score
+
+        assignment_score = student_score/total_score
+        print(student_score, total_score, assignment_score)
+        current_score = AssignmentScore.query.filter_by(student_id=student_id, course_id=course_id, assignment_id=assignment_id).first()
+        
+        if current_score:
+            current_score.score = assignment_score
+        else:
+            current_score = AssignmentScore(student_id=student_id, course_id=course_id, assignment_id=assignment_id, score = assignment_score)
+            db.session.add(current_score)
+        
+        db.session.commit()
 
         return make_response(jsonify({"message": "Answers Recorded"}), 200)
 
@@ -506,6 +538,8 @@ api.add_resource(AssignmentAnswersResource, '/answers/<int:course_id>/<int:week_
     
 class WeakConceptsResource(Resource):
 
+    conceptsRecommender = WeakConceptsRecommender(max_output_tokens=1_00_000)
+
     @auth_required("token")
     def get(self, course_id):
         
@@ -516,9 +550,25 @@ class WeakConceptsResource(Resource):
         if course_id not in course_list:
             abort(404, message="Course not found")
 
-        weak_concepts = []
+        questions = StudentGradedMCQAssignmentResult.query.join(MCQ, StudentGradedMCQAssignmentResult.question_id==MCQ.question_id) 
+        
+        incorrect_questions = questions.filter(StudentGradedMCQAssignmentResult.student_id==student_id, StudentGradedMCQAssignmentResult.is_correct==0).all()
+        incorrect_question_ids = [question.question_id for question in incorrect_questions]
+        incorrect_questions_text = []
+        for incorrect_question_id in incorrect_question_ids:
+            question = MCQ.query.filter_by(question_id=incorrect_question_id).first().question_text
+            incorrect_questions_text.append(question) 
+        
+        correct_questions = questions.filter(StudentGradedMCQAssignmentResult.student_id==student_id, StudentGradedMCQAssignmentResult.is_correct==1).all()
+        correct_question_ids = [question.question_id for question in correct_questions]
+        correct_questions_text = []
+        for correct_question_id in correct_question_ids:
+            question = MCQ.query.filter_by(question_id=correct_question_id).first().question_text
+            correct_questions_text.append(question) 
+        
+        input_questions = {"correct_questions": correct_questions_text, "incorrect_questions": incorrect_questions_text}
 
-        weak_concepts = ['List of concepts where the student has underperformed for a course']
+        weak_concepts = self.conceptsRecommender.getconcepts(input_questions)
 
         return make_response(jsonify({"weak_concepts": weak_concepts}), 200) 
 

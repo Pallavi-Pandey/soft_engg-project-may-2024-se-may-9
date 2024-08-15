@@ -114,3 +114,27 @@ class ProgrammingAssistantAI:
 
         response = self.model.generate_content(user_prompt)
         return response.text
+
+class WeakConceptsRecommender:
+
+    
+    def __init__(self, model_name = "gemini-1.5-flash", max_output_tokens = 1_00_000):
+        self.model = genai.GenerativeModel(
+            model_name = model_name,
+            generation_config = {
+                "temperature" : 1,
+                "top_p" : 0.95,
+                "top_k" : 64,
+                "max_output_tokens" : max_output_tokens,
+                "response_mime_type" : "text/plain"
+            },
+
+        system_instruction='''You are supposed to identify weak concepts for a student. You will be receiving 2 lists,
+            first list contains questions that were correctly answerd by the student and the second list contains questions
+            that were incorrectly aswered. You have to identify the concepts or topics that student needs to work on by
+            interpreting the questions''',
+)
+
+    def getconcepts(self, questions):
+        response = self.model.generate_content("{}".format(questions))
+        return response.text
