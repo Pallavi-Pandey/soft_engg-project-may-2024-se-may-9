@@ -1,6 +1,6 @@
 export default{
     template:`
-    <div class="main-content">
+    <div class="main-content-of-about">
             <h2>About the Course</h2>
             <div class="rating">
                 <span class="stars">☆☆☆☆☆</span> /5 (0 reviews)
