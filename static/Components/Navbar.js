@@ -1,4 +1,14 @@
 export default {
+    props: {
+        courseTitle: {
+            type: String,
+            default: 'Course Name'  // Default course name if not provided
+        },
+        userEmail: {
+            type: String,
+            default: 'email@example.com'  // Default email if not provided
+        }
+    },
     template: `
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <div class="container-fluid">
@@ -12,26 +22,25 @@ export default {
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Course Name</a>
+                        <a class="nav-link active" aria-current="page" href="#">{{ courseTitle }}</a>  <!-- Dynamic course title -->
                     </li>
                 </ul>
                 <div class="d-flex">
-                    <button @click="log_out" class="btn btn-danger me-2">Log Out</button>
+                    <button @click="logout" class="btn btn-danger me-2">Log Out</button>
                 </div>
                 <div class="d-flex">
-                    dummy_email@email.com
+                    {{ userEmail }}  <!-- Dynamic user email -->
                 </div>
             </div>
         </div>
     </nav>
     `,
-
-    methods:{
-        async log_out() {
+    methods: {
+        async logout() {
             const response = await fetch("/log_out", {
                 method: "POST",
                 headers: {
-                    'Authentication-Token': this.token,
+                    'Authentication-Token': localStorage.getItem('authToken'),
                 },
             });
     

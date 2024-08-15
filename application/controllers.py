@@ -89,7 +89,8 @@ def get_user():
     if current_user:
         user_details = {
             'id': current_user.student_id,
-            'name': current_user.name
+            'name': current_user.name,
+            'email': current_user.email  # Add email to the returned user details
         }
         return make_response(jsonify(user_details))
     else:

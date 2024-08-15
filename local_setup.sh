@@ -23,6 +23,7 @@ elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
     .env/Scripts/activate.bat
 else
     echo "Unsupported operating system. Please activate the virtual environment manually."
+    exit 1
 fi
 
 # Upgrade the pip
