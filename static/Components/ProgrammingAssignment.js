@@ -21,34 +21,7 @@ export default {
   data() {
     return {
       assignmentTitle: '',
-      question: `Question
-
-Accept three positive integers as input from the user and check if they form the sides of a right triangle. Print YES if they form one, and NO if they do not.
-
-Input-Output
-
-Specification
-
-The input will have three lines, with one integer on each line.
-The output will be a single line containing one of these two strings: YES or NO.
-
-Examples
-
-Input-1
-1
-2
-3
-
-Output-1
-NO
-
-Input-2
-3
-4
-5
-
-Output-2
-YES`,
+      question: `Question`,
       deadline: "2024-08-11",
       answers: [],
       errorMessage: '',
@@ -119,8 +92,8 @@ YES`,
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch hint');
-        }
+          throw new Error(`Failed to fetch hint`);
+      }
 
         const data = await response.json();
         this.hint = data.hint;
