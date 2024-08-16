@@ -27,8 +27,8 @@ a{
     border: 1px solid #ddd;
     padding: 20px;
     margin: 10px;
-    width: 200px; /* Adjust width as needed */
-    text-align: center; /* Center text inside the card */
+    width: 200px; 
+    text-align: center; 
 } */
 
 
@@ -76,3 +76,15 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
   .btn-primary:hover {
     background-color: #004494;
   }
+
+  .test-case-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .test-case-column {
+    width: 30%;
+    padding: 10px;
+  }
+  
