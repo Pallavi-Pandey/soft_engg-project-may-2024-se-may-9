@@ -58,6 +58,18 @@ class WeeklyContentResource(Resource):
 
 api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
 
+class VideoModuleResource(Resource):
+
+    @auth_required("token")
+    def get(self, content_id):
+        video = VideoModule.query.filter_by(content_id=content_id).first()
+        if not video:
+            abort(404, message='No such video found')
+        else:
+            return make_response(jsonify({'ID': video.video_id, 'Transcript': video.transcript_uri, 'Tags': video.tags_uri}), 200)
+
+api.add_resource(VideoModuleResource, '/course_video/<int:content_id>')
+
 class ModuleSummaryAPI(Resource):
 
     moduleSummarizerAI = SummarizerAI(max_output_tokens=1_000)
