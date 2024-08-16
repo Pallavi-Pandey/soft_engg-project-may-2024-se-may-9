@@ -9,10 +9,14 @@ export default {
             type: String,
             required: true
         },
-        id : {
+        content : {
+            required: true,
+            type: Object
+        },
+        weekId : {
             required: true,
             type: Number
-        }
+        },
     },
     components: {
         AboutCourse,
@@ -31,6 +35,6 @@ export default {
         }
     },
     template: `
-        <component :is="componentToShow" :id="id" />
+        <component :is="componentToShow" :weekId="weekId" :content="content" />
     `
 };

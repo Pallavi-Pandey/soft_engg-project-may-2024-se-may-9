@@ -15,7 +15,8 @@ export default {
             selectedComponent: 'AboutCourse',  // Default component
             courseTitle: '',  // Store the course title
             userEmail: '',  // Store the user email
-            id: null
+            content: {},
+            weekId: null
         };
     },
     methods: {
@@ -41,7 +42,7 @@ export default {
         },
         async fetchCourseTitle() {
             try {
-                const response = await fetch(`/api/courses/${this.courseId}`, {
+                const response = await fetch(`/api/courses/1`, {
                     headers: {
                         'Authentication-Token': localStorage.getItem('authToken')
                     }
@@ -59,7 +60,9 @@ export default {
         },
         updateContent(payload) {
             this.selectedComponent = payload.componentName
-            this.id = payload.id
+            this.content = payload.content
+            this.weekId = payload.weekId
+            console.log(payload)
         }
     },
     created() {
@@ -73,7 +76,8 @@ export default {
         <div class="content-wrapper" style="display: flex;">
             <FixedSidebar />
             <ContentSidebar @update-content="updateContent" />
-            <MainContent :currentComponent="selectedComponent" :id="id" />
+            <MainContent :key="selectedComponent + content.id + weekId"
+            :currentComponent="selectedComponent" :weekId="weekId" :content="content" />
         </div>
     </div>
     `

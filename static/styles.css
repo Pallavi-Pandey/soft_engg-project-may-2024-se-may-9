@@ -5,14 +5,32 @@
 a{
     text-decoration: none;
 }
-.course-cards-container {
+/* .course-cards-container {
     display: flex; 
-  }
+  } */
 
 .card{
     margin: 0.4em .4em;
     width: calc(100/3);
 }
+
+.course-cards-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically (if container has a height) */
+    flex-wrap: wrap; /* Allows cards to wrap onto multiple lines if needed */
+    gap: 10px; /* Optional: space between cards */
+}
+
+/* .card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 10px;
+    width: 200px; /* Adjust width as needed */
+    text-align: center; /* Center text inside the card */
+} */
+
 
 /* .fixed-sidebar{
     background-color: #49516C;

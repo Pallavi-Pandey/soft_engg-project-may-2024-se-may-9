@@ -33,11 +33,11 @@ export default {
                         <a class="nav-link active" aria-current="page" href="#">{{ courseTitle }}</a>  <!-- Dynamic course title -->
                     </li>
                 </ul>
-                <div class="d-flex">
-                    <button v-if="showUserEmail" @click="logout" class="btn btn-danger me-2">Log Out</button>
+                <div class="d-flex" style="margin-right:20px;">
+                    <span v-if="showUserEmail">{{ userEmail }}</span>  <!-- Dynamic user email -->
                 </div>
                 <div class="d-flex">
-                    <span v-if="showUserEmail">{{ userEmail }}</span>  <!-- Dynamic user email -->
+                    <button v-if="showUserEmail" @click="logout" class="btn btn-danger me-2">Log Out</button>
                 </div>
             </div>
         </div>

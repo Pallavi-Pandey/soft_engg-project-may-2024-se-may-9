@@ -20,15 +20,15 @@ export default {
           </span>
           <ul class="dropdown-menu" :aria-labelledby="'week' + index + 'Dropdown'">
             <li v-for="(content, index) in week.weekContent" :key="index">
-              <span class="dropdown-item" @click="selectItem(content.id, 'LectureContent')"
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'LectureContent')"
               v-if="content.type == 'html_page_content_type'">{{ content.title }}</span>
-              <span class="dropdown-item" @click="selectItem(content.id, 'LectureContent')"
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'LectureContent')"
               v-if="content.type == 'module_content_type'">{{ content.title }}</span>
-              <span class="dropdown-item" @click="selectItem(content.id, 'WeeklyAssignment')"
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'WeeklyAssignment')"
               v-if="content.type == 'assignment_content_type'">{{ content.title }}</span>
-              <span class="dropdown-item" @click="selectItem(content.id, 'WeeklyAssignment')"
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'WeeklyAssignment')"
               v-if="content.type == 'graded_assignment_content_type'">{{ content.title }}</span>
-              <span class="dropdown-item" @click="selectItem(content.id, 'ProgrammingAssignment')"
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'ProgrammingAssignment')"
               v-if="content.type == 'programming_content_type'">{{ content.title }}</span>
             </li>
           </ul>
@@ -46,11 +46,13 @@ export default {
     this.onLoadData();
   },
   methods: {
-    selectItem(id, componentName) {
+    selectItem(weekId, content, componentName) {
       let data = {
-        id: id,
+        weekId: weekId,
+        content: content,
         componentName: componentName
       }
+      console.log(data, "data")
       this.$emit('update-content', data);
     },
     async onLoadData() {

@@ -16,6 +16,9 @@ export default {
     assignmentId: {
       type: Number,
       default: 17
+    },
+    content: {
+      type: Object
     }
   },
   data() {
@@ -171,7 +174,7 @@ YES`,
     // Fetch assignment data and hint when component is mounted
     this.fetchAssignmentData();
     this.fetchHint();
-    
+
     // Initialize Ace Editor when component is mounted
     this.$nextTick(() => {
       this.createAceEditor();
