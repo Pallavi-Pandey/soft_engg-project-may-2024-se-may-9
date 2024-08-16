@@ -8,6 +8,10 @@ export default {
         currentComponent: {
             type: String,
             required: true
+        },
+        id : {
+            required: true,
+            type: Number
         }
     },
     components: {
@@ -27,6 +31,6 @@ export default {
         }
     },
     template: `
-        <component :is="componentToShow" />
+        <component :is="componentToShow" :id="id" />
     `
 };

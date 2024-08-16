@@ -14,7 +14,8 @@ export default {
         return {
             selectedComponent: 'AboutCourse',  // Default component
             courseTitle: '',  // Store the course title
-            userEmail: ''  // Store the user email
+            userEmail: '',  // Store the user email
+            id: null
         };
     },
     methods: {
@@ -55,6 +56,10 @@ export default {
             } catch (error) {
                 console.error('Error fetching course title:', error);
             }
+        },
+        updateContent(payload) {
+            this.selectedComponent = payload.componentName
+            this.id = payload.id
         }
     },
     created() {
@@ -68,7 +73,7 @@ export default {
         <div class="content-wrapper" style="display: flex;">
             <FixedSidebar />
             <ContentSidebar @update-content="updateContent" />
-            <MainContent :currentComponent="selectedComponent" />
+            <MainContent :currentComponent="selectedComponent" :id="id" />
         </div>
     </div>
     `
