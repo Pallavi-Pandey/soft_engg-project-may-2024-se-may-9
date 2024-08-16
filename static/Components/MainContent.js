@@ -8,7 +8,15 @@ export default {
         currentComponent: {
             type: String,
             required: true
-        }
+        },
+        content : {
+            required: true,
+            type: Object
+        },
+        weekId : {
+            required: true,
+            type: Number
+        },
     },
     components: {
         AboutCourse,
@@ -27,8 +35,12 @@ export default {
         }
     },
     template: `
+<<<<<<< HEAD
     <div class="main-course-content">
         <component :is="componentToShow" />
     </div>
+=======
+        <component :is="componentToShow" :weekId="weekId" :content="content" />
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
     `
 };

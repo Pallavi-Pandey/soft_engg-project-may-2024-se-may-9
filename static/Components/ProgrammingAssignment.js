@@ -1,9 +1,4 @@
-import GradedAssignmentQuestions from './QuestionComponent.js';
-
 export default {
-  components: {
-    GradedAssignmentQuestions,
-  },
   props: {
     courseId: {
       type: Number,
@@ -13,15 +8,18 @@ export default {
       type: Number,
       default: 2
     },
-    assignmentId: {
-      type: Number,
-      default: 17
+    content: {
+      type: Object
     }
   },
   data() {
     return {
       assignmentTitle: '',
+<<<<<<< HEAD
       question: `Question`,
+=======
+      question: "",
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
       deadline: "2024-08-11",
       answers: [],
       errorMessage: '',
@@ -32,21 +30,37 @@ export default {
       hint: '', // This will store the hint from the API
       editorOptions: {
         mode: 'python', // Specify the mode, e.g., 'python'
-        theme: 'monokai', // Specify the theme, e.g., 'monokai'
+        theme: 'dreamweaver', // Specify the theme, e.g., 'monokai'
         tabSize: 2, // Customize other options
         fontSize: 14 // Customize font size
-      }
+      },
+      output: '',
+      testCases: [],
+      privateCasesMarksObtained: 0,
+      publicCasesMarksObtained: 0,
+      privateCasesTotalMarks: 0,
+      publicCasesTotalMarks: 0,
+      showPrivateCases: false,
+      showPublicCases: false,
     };
   },
   methods: {
     async fetchAssignmentData() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
           throw new Error('No authentication token found');
         }
+<<<<<<< HEAD
   
         const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
+=======
+        const response = await fetch(`/api/course_assignment/1/${this.weekId}/${this.content.id}`, {
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
           method: 'GET',
           headers: {
             'Authentication-Token': token
@@ -58,6 +72,7 @@ export default {
         }
   
         const data = await response.json();
+<<<<<<< HEAD
         console.log(data);
   
         // Assuming the response has a structure like: { "PPA 1 - Not Graded": [ { question_id: ..., question_text: ..., options: [...] } ] }
@@ -70,7 +85,38 @@ export default {
           if (this.questions[0].deadline) {
             this.deadline = new Date(this.questions[0].deadline);
           }
+=======
+        console.log(data, 'data')
+        this.question = data[this.content.title][0].problem_statement;
+      } catch (error) {
+        this.errorMessage = error.message;
+      }
+    },
+    async fetchAssignmentTestCases() {
+
+      try {
+        const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
+        if (!token) {
+          throw new Error('No authentication token found');
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
         }
+        const response = await fetch(`/api/programming_assignment_test_cases/${this.content.id}`, {
+          method: 'GET',
+          headers: {
+            'Authentication-Token': token
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch assignment test cases');
+        }
+        const data = await response.json();
+        console.log(data, 'data')
+        this.testCases = data.Cases.map((testCase) => {
+          return {
+            ...testCase,
+            actualOutput: ""
+          }
+        })
       } catch (error) {
         this.errorMessage = error.message;
       }
@@ -114,7 +160,7 @@ export default {
     async submitAssignment() {
       console.log(this.code);
       try {
-        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -139,26 +185,102 @@ export default {
         return date;
       }
     },
-    createAceEditor() {
-      if (window.ace) {
-        let editor = ace.edit("editor");
-        editor.setTheme("ace/theme/" + this.editorOptions.theme);
-        editor.session.setMode("ace/mode/" + this.editorOptions.mode); // Set mode based on selected language
-        editor.setValue(this.code); // Load the initial code into the editor
-
-        // Listen for changes in the editor and update the `code` data property
-        editor.session.on('change', () => {
-          this.code = editor.getValue();
-        });
-      } else {
-        console.error("Ace editor is not loaded");
+    disableEditor() {
+      if (this.selectedLanguage == "Python3") {
+        return false
       }
-    }
+      else {
+        return true
+      }
+    },
+    async compileCode() {
+      try {
+        this.privateCasesMarksObtained = 0
+        this.publicCasesMarksObtained = 0
+        this.privateCasesTotalMarks = 0
+        this.publicCasesTotalMarks = 0
+        let i = 0
+        for (let testCase of this.testCases) {
+          let firstLine = 'x = ' + testCase.input + "\n"
+          let lastLine = '\nprint(testFunc(x))'
+          const updatedCode = firstLine + this.code + lastLine
+          const response = await fetch(`/api/compile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authentication-Token': localStorage.getItem('authToken'), // Replace with your actual authentication token
+            },
+            body: JSON.stringify({ code: updatedCode })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+
+          const data = await response.json();
+          let result = {
+            ...testCase,
+            actualOutput: (data.output ?? data.error)?.trim()
+          }
+
+          this.testCases.splice(i, 1, result)
+
+          if (result.is_private) {
+            this.privateCasesTotalMarks += 1
+            if (result.expected_output == result.actualOutput) {
+              this.privateCasesMarksObtained += 1
+            }
+          } else if (!result.is_private) {
+            this.publicCasesTotalMarks += 1
+            if (result.expected_output == result.actualOutput) {
+              this.publicCasesMarksObtained += 1
+            }
+          }
+
+          i++
+        }
+
+      } catch (error) {
+        this.errorMessage = error.message || 'Failed to generate summary.';
+      }
+    },
+    displayPublicCasesResult() {
+      this.showPublicCases = false
+      this.showPublicCases = true
+    },
+    displayPrivateCasesResult() {
+      this.showPrivateCases = false
+      this.showPrivateCases = true
+    },
+    createAceEditor() {
+      const editor = ace.edit("editor");
+      editor.setTheme(`ace/theme/${this.editorOptions.theme}`);
+      editor.session.setMode(`ace/mode/${this.editorOptions.mode}`);
+
+      ace.require("ace/ext/language_tools")
+      editor.setOptions({
+        fontSize: this.editorOptions.fontSize,
+        tabSize: this.editorOptions.tabSize,
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        enableSnippets: true
+      });
+      // Bind Ace Editor content to `this.code`
+      editor.getSession().on('change', () => {
+        this.code = editor.getValue();
+      });
+    },
   },
   mounted() {
     // Fetch assignment data and hint when component is mounted
     this.fetchAssignmentData();
+<<<<<<< HEAD
     
+=======
+    this.fetchAssignmentTestCases();
+    // this.fetchHint();
+
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
     // Initialize Ace Editor when component is mounted
     this.$nextTick(() => {
       this.createAceEditor();
@@ -169,13 +291,13 @@ export default {
       <div style="background-color: maroon; color: white;">
         <div style="margin-left: 20px; margin-top: 10px;" v-if="createDeadLineMidnightIST() < new Date()">The due date for submitting this assignment has passed.</div>
         <div style="margin-left: 20px; margin-bottom: 20px;" v-if="deadline">Due date: {{ deadline.toLocaleString() }}</div>
+        <div style="margin-left: 20px; margin-bottom: 20px;" v-if="showPrivateCases">Private Test Cases Passed: {{ privateCasesMarksObtained }} / {{ privateCasesTotalMarks }}</div>
       </div>
       <div style="margin-left: 20px;">{{ question }}</div>
       <div style="color: red; margin-left: 20px;">This assignment has public test cases. Please click on "Test Run" button to see the status of public test cases. Assignment will be evaluated only after submitting using "Submit" button below. If you only test run the program, your assignment will not be graded and you will not see your score after the deadline.</div>
       <div style="margin-left: 20px;">
         Choose Language:
         <select v-model="selectedLanguage" id="language" style="margin-left: 20px;" class="mb-3">
-          <option disabled value="">Select a language</option>
           <option v-for="option in options" :key="option" :value="option">
             {{ option }}
           </option>
@@ -185,7 +307,27 @@ export default {
       <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
       <!-- Ace Editor HTML -->
-      <div id="editor" style="height: 400px; width: 100%;">{{ code }}</div>
+      <div id="editor" :disable="disableEditor()" style="height: 300px; width: 100%; margin: 20px;">{{code}}</div>
+
+      <div>
+    <button @click="() => {compileCode(); displayPublicCasesResult();}" class="btn btn-xs btn-primary mt-3">Test Code</button>
+    <span v-if="showPublicCases"> Public Test Cases Passed: {{ publicCasesMarksObtained }} / {{ publicCasesTotalMarks }} </span>
+    </div>
+
+    <div v-for="(testCase, index) in testCases" :key="index" class="test-case-row">
+      <div class="test-case-column">
+        <strong>Input:</strong>
+        <pre>{{ testCase.input }}</pre>
+      </div>
+      <div class="test-case-column">
+        <strong>Expected Output:</strong>
+        <pre>{{ testCase.expected_output }}</pre>
+      </div>
+      <div class="test-case-column">
+        <strong>Actual Output:</strong>
+        <pre>{{ testCase.actualOutput }}</pre>
+      </div>
+    </div>
 
       <!-- Get Hint -->
       <div>
@@ -201,7 +343,7 @@ export default {
 
       <!-- Submit button -->
       <div>
-        <button @click="submitAssignment" class="btn btn-primary mt-3">Submit Assignment</button>
+        <button @click="() => {submitAssignment(); displayPrivateCasesResult();}" class="btn btn-primary mt-3">Submit Assignment</button>
       </div>
     </div>
   `

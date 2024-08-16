@@ -5,15 +5,39 @@
 a{
     text-decoration: none;
 }
-.course-cards-container {
+/* .course-cards-container {
     display: flex; 
-  }
+  } */
 
 .card{
     margin: 0.4em .4em;
     width: calc(100/3);
 }
 
+<<<<<<< HEAD
+=======
+.course-cards-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically (if container has a height) */
+    flex-wrap: wrap; /* Allows cards to wrap onto multiple lines if needed */
+    gap: 10px; /* Optional: space between cards */
+}
+
+/* .card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 10px;
+    width: 200px; 
+    text-align: center; 
+} */
+
+
+/* .fixed-sidebar{
+    background-color: #49516C;
+} */
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
 
 nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     box-shadow: #49516C;
@@ -57,6 +81,7 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     background-color: #004494;
   }
 
+<<<<<<< HEAD
 
 
   .question-container {
@@ -100,3 +125,16 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
 .main-course-content{
     padding: 20px;
 }
+=======
+  .test-case-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .test-case-column {
+    width: 30%;
+    padding: 10px;
+  }
+  
+>>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122

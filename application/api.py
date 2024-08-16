@@ -4,6 +4,7 @@ from flask_security import auth_required, current_user
 from flask_restful import Resource, Api, abort, reqparse, fields, marshal_with
 from application.models import *
 from application.gen_ai_models import ProgrammingAssistantAI, SummarizerAI, WeakConceptsRecommender
+import subprocess
 
 api = Api(prefix='/api')
 
@@ -57,6 +58,18 @@ class WeeklyContentResource(Resource):
                 return make_response(jsonify({'Week': week.week_name, 'Contents': weekly_contents}), 200)
 
 api.add_resource(WeeklyContentResource, '/courses/<int:course_id>/<int:week_id>')
+
+class VideoModuleResource(Resource):
+
+    @auth_required("token")
+    def get(self, content_id):
+        video = VideoModule.query.filter_by(content_id=content_id).first()
+        if not video:
+            abort(404, message='No such video found')
+        else:
+            return make_response(jsonify({'ID': video.video_id, 'Transcript': video.transcript_uri, 'Tags': video.tags_uri}), 200)
+
+api.add_resource(VideoModuleResource, '/course_video/<int:content_id>')
 
 class ModuleSummaryAPI(Resource):
 
@@ -642,3 +655,55 @@ class DeleteMockQuestionAPI(Resource):
             return make_response(jsonify({"error": str(e)}), 500)
         
 api.add_resource(DeleteMockQuestionAPI, '/mock_assignment/<int:question_id>')
+
+class CompilePythonCodeAPI(Resource):
+    
+    @auth_required("token")
+    def post(self):
+        user_code = request.get_json().get("code")
+        print(user_code, 'user_code')
+        try:
+            with open('temp_code.py', 'w') as f:
+                f.write(user_code)
+
+            result = subprocess.run(['python3', 'temp_code.py'], capture_output= True, text=True, timeout=1000)
+
+            if result.returncode != 0:
+                return make_response(jsonify({"error": result.stderr}), 400)
+            else:
+                return make_response(jsonify({"output": result.stdout}), 200)
+        
+        except subprocess.TimeoutExpired:
+            return make_response(jsonify({"error": "Code excecution timed out"}), 400)
+        
+        except Exception as e:
+            return make_response(jsonify({"error": str(e)}), 500)
+
+api.add_resource(CompilePythonCodeAPI, "/compile")
+
+class TestCasesResource(Resource):
+
+    @auth_required("token")
+    def get(self, assignment_id):
+        cases = TestCase.query.filter_by(assignment_id=assignment_id).all()
+        if not cases:
+            abort(404, message='No such test cases found')
+        else:
+            for case in cases:
+                print(f"Case ID: {case.test_case_id}, is_private: {case.is_private}")
+            cases_list = [
+                    {
+                        "id": case.test_case_id,
+                        "input": case.input_text,
+                        "expected_output": case.expected_output,
+                        "memory_limit": case.memory_limit,
+                        "is_private": case.is_private,
+                        "time_limit": case.time_limit
+                    }
+                    for case in cases
+                ]
+
+            return make_response(jsonify({'Cases': cases_list}), 200)
+            
+
+api.add_resource(TestCasesResource, '/programming_assignment_test_cases/<int:assignment_id>')

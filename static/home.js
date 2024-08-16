@@ -6,7 +6,7 @@ export default {
     <div>
       <Navbar :userEmail="userEmail" />
       <div v-if="user_found">
-        <div class="text-center" style="padding-top:150px">
+        <div class="text-center" style="padding-top:50px">
           <h1 class="mb-5 display-4">Welcome, {{ name }}!</h1>
           <div style="justify-content: center">
             <button class="btn btn-primary" @click="$router.push('/course_info')">Test Course Info Retrieval</button>

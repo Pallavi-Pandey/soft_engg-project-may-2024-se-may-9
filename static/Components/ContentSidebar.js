@@ -1,5 +1,5 @@
 export default {
-    template: `
+  template: `
     <div class="content-sidebar">
       <ul class="nav flex-column mt-3">
         <!-- Headline Sections -->
@@ -10,63 +10,98 @@ export default {
           <span class="nav-link" @click="selectItem('AboutCourse')">About the Course</span>
         </li>
 
-        <!-- Dropdown for Week 1 -->
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week1Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 1</span>
-          <ul class="dropdown-menu" aria-labelledby="week1Dropdown">
-            <li><span class="dropdown-item" @click="selectItem('LectureContent')">Lecture1</span></li>
-            <li><span class="dropdown-item" @click="selectItem('WeeklyAssignment')">Graded Assignment</span></li>
-            <li><span class="dropdown-item" @click="selectItem('ProgrammingAssignment')">Programming Assignment</span></li>
-          </ul>
-        </li>
-
-        <!-- Dropdown for Week 2 and onwards -->
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week2Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 2</span>
-          <ul class="dropdown-menu" aria-labelledby="week2Dropdown">
-            <!-- Add items for Week 2 if needed -->
-          </ul>
-        </li>
-
-        <!-- Repeat for other weeks as needed -->
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week3Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 3</span>
-          <ul class="dropdown-menu" aria-labelledby="week3Dropdown">
-            <!-- Add items for Week 3 if needed -->
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week4Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 4</span>
-          <ul class="dropdown-menu" aria-labelledby="week4Dropdown">
-            <!-- Add items for Week 4 if needed -->
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week5Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 5</span>
-          <ul class="dropdown-menu" aria-labelledby="week5Dropdown">
-            <!-- Add items for Week 5 if needed -->
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <span class="nav-link dropdown-toggle" id="week7Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Week 7</span>
-          <ul class="dropdown-menu" aria-labelledby="week7Dropdown">
-            <!-- Add items for Week 7 if needed -->
+        <li class="nav-item" v-for="(week, index) in weekList" :key="index">
+          <span class="nav-link dropdown-toggle" 
+            :id="'week' + index + 'Dropdown'" 
+            role="button" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false">
+            {{ week.title }}
+          </span>
+          <ul class="dropdown-menu" :aria-labelledby="'week' + index + 'Dropdown'">
+            <li v-for="(content, index) in week.weekContent" :key="index">
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'LectureContent')"
+              v-if="content.type == 'html_page_content_type'">{{ content.title }}</span>
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'LectureContent')"
+              v-if="content.type == 'module_content_type'">{{ content.title }}</span>
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'WeeklyAssignment')"
+              v-if="content.type == 'assignment_content_type'">{{ content.title }}</span>
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'WeeklyAssignment')"
+              v-if="content.type == 'graded_assignment_content_type'">{{ content.title }}</span>
+              <span class="dropdown-item" @click="selectItem(week.id, content, 'ProgrammingAssignment')"
+              v-if="content.type == 'programming_content_type'">{{ content.title }}</span>
+            </li>
           </ul>
         </li>
       </ul>
     </div>
     `,
-    data() {
-      return {
-        // Add any necessary data properties here
-      };
+  data() {
+    return {
+      courseId: 1,
+      weekList: [],
+    };
+  },
+  mounted() {
+    this.onLoadData();
+  },
+  methods: {
+    selectItem(weekId, content, componentName) {
+      let data = {
+        weekId: weekId,
+        content: content,
+        componentName: componentName
+      }
+      console.log(data, "data")
+      this.$emit('update-content', data);
     },
-    methods: {
-      selectItem(componentName) {
-        this.$emit('update-content', componentName);
+    async onLoadData() {
+      await this.fetchCourseDetails();
+      await this.fetchWeekDetails();
+    },
+    async fetchCourseDetails() {
+      try {
+        const response = await fetch(`/api/courses/${this.courseId}`, {
+          headers: {
+            'Authentication-Token': localStorage.getItem('authToken')
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.weekList = data.Weeks
+        } else {
+          console.error('Failed to fetch course details');
+        }
+      } catch (error) {
+        console.error('Error fetching course details:', error);
       }
     },
-  };
+    async fetchWeekDetails() {
+      try {
+        let i = 0
+        for (let week of this.weekList) {
+          const response = await fetch(`/api/courses/${this.courseId}/${week.id}`, {
+            headers: {
+              'Authentication-Token': localStorage.getItem('authToken')
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            let weekData = {
+              ...week,
+              weekContent: data.Contents
+            }
+            this.weekList.splice(i,1,weekData)
+            i++
+          } else {
+            console.error('Failed to fetch course details');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching course details:', error);
+      }
+    }
+  },
+};

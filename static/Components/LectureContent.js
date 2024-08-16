@@ -1,23 +1,35 @@
 export default {
+    props: {
+        content: {
+            required: true,
+            type: Object
+        },
+        weekId: {
+            required: true,
+            type: Number
+        },
+    },
     data() {
         return {
             contentId: 2, // Replace with the actual content ID
             summary: '',
-            errorMessage: ''
+            errorMessage: '',
+            src: ""
         };
     },
     template: `
     <div>
         <h2>
-            1.1 Deconstructing the Software Development Process - Introduction
+            {{content.title}}
         </h2>
         <span class="stars">★★★☆☆</span> /5 (19 reviews)
         <br>
         <iframe width="746" height="420" 
-            src="https://www.youtube.com/embed/hKm_rh1RTJQ?si=o20ZOZkqiv1heEVy" 
+            :src="src" 
             title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; 
             clipboard-write; encrypted-media; gyroscope; picture-in-picture; 
-            web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+            web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen
+            ref="videoIframe">
         </iframe>
         <br>
         <button @click="generateSummary" class="btn btn-primary me-2">Generate Summary</button>
@@ -31,22 +43,44 @@ export default {
     </div>
     `,
     methods: {
-        renderVideo() {
-            const iframe = this.$refs.videoIframe;
-            if (iframe) {
-                iframe.src = iframe.src; 
-            }
-        },
 
-        async generateSummary() {
+        async fetchVideoLectureURL() {
             try {
-                const response = await fetch(`/api/summary/module/${this.contentId}`, {
+                const response = await fetch(`/api/course_video/${this.content.id}`, {
                     method: 'GET',
                     headers: {
                         'Authentication-Token': localStorage.getItem('authToken'), // Replace with your actual authentication token
                     },
                 });
-                
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                this.src = "https://www.youtube.com/embed/" + data.ID
+                console.log(this.src, 'data')
+            } catch (error) {
+                this.errorMessage = error.message || 'Failed to generate summary.';
+            }
+        },
+        renderVideo() {
+            const iframe = this.$refs.videoIframe;
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        },
+
+        async generateSummary() {
+            try {
+                const response = await fetch(`/api/summary/module/${this.content.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authentication-Token': localStorage.getItem('authToken'), // Replace with your actual authentication token
+                    },
+                });
+
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
                 }
@@ -56,9 +90,13 @@ export default {
             } catch (error) {
                 this.errorMessage = error.message || 'Failed to generate summary.';
             }
+        },
+        async onLoadData() {
+            await this.fetchVideoLectureURL();
+            this.renderVideo();
         }
     },
     mounted() {
-        this.renderVideo();
+        this.onLoadData();
     },
 };
