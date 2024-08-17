@@ -14,7 +14,8 @@ export default {
             contentId: 2, // Replace with the actual content ID
             summary: '',
             errorMessage: '',
-            src: ""
+            src: "",
+            isLoading: false
         };
     },
     template: `
@@ -33,16 +34,28 @@ export default {
         </iframe>
         <br>
         <button @click="generateSummary" class="btn btn-primary me-2">Generate Summary</button>
+        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your summary...
+        </div>
         <div v-if="summary" class="mt-3">
-            <h3>Lecture Summary</h3>
-            <p>{{ summary }}</p>
+            <h3>Lecture Summary</h3>        
+            <div v-html="renderedContent"></div>
         </div>
         <div v-if="errorMessage" class="alert alert-danger mt-3">
             {{ errorMessage }}
         </div>
     </div>
     `,
+    computed: {
+        renderedContent() {
+          return this.renderMarkdown(this.summary);
+        }
+      },
     methods: {
+        renderMarkdown(content) {
+            const md = window.markdownit();
+            return md.render(content);
+          },
 
         async fetchVideoLectureURL() {
             try {
@@ -73,6 +86,7 @@ export default {
         },
 
         async generateSummary() {
+            this.isLoading = true
             try {
                 const response = await fetch(`/api/summary/module/${this.content.id}`, {
                     method: 'GET',
@@ -89,6 +103,8 @@ export default {
                 this.summary = data.summary;
             } catch (error) {
                 this.errorMessage = error.message || 'Failed to generate summary.';
+            } finally {
+                this.isLoading = false
             }
         },
         async onLoadData() {
