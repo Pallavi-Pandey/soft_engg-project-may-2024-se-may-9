@@ -2,6 +2,7 @@ import AboutCourse from "./AboutCourse.js";
 import LectureContent from "./LectureContent.js";
 import WeeklyAssignment from "./WeeklyAssignment.js";
 import ProgrammingAssignment from "./ProgrammingAssignment.js";
+import SummaryContent from "./SummaryContent.js";
 
 export default {
     props: {
@@ -23,7 +24,8 @@ export default {
         AboutCourse,
         LectureContent,
         WeeklyAssignment,
-        ProgrammingAssignment
+        ProgrammingAssignment,
+        SummaryContent
     },
     computed: {
         componentToShow() {
@@ -31,7 +33,8 @@ export default {
                 AboutCourse,
                 LectureContent,
                 WeeklyAssignment,
-                ProgrammingAssignment
+                ProgrammingAssignment,
+                SummaryContent
             }[this.currentComponent] || AboutCourse; // Fallback to AboutCourse
         }
     },

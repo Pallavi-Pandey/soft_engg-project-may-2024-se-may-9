@@ -8,15 +8,28 @@ export default {
       index: {
         type: Number,
         required: true
+      },
+      selectedOptionId: {
+        type: Number,
+      }
+    },
+    data() {
+      return {
+        selectedOption: this.selectedOptionId
+      }
+    },
+    watch: {
+      selectedOptionId(newVal) {
+        this.selectedOption = newVal;
       }
     },
     methods: {
-      selectOption(optionId, option_text) {
+      selectOption(optionId) {
+        this.selectedOption = optionId;
         // Emit the selected option ID to the parent component
         this.$emit('answer-selected', {
           question_id: this.question.question_id,
           option_id: optionId,
-          option_text: option_text
         });
       }
     },
@@ -30,7 +43,8 @@ export default {
             :id="option.option_id" 
             :name="'question-' + question.question_id" 
             :value="option.option_id" 
-            @change="selectOption(option.option_id, option.option_text)"
+            v-model="selectedOption"
+            @change="selectOption(option.option_id)"
           />
           <label :for="option.option_id">{{ option.option_text }}</label>
         </div>

@@ -22,8 +22,10 @@ export default {
       options: ["Python3"],
       selectedLanguage: '', // Define selectedLanguage in the data object
       code: '', // This will hold the content of the Ace Editor
-      isLoading: false,
+      isHintLoading: false,
+      isAltSolLoading: false,
       hint: '', // This will store the hint from the API
+      altSol: '',
       editorOptions: {
         mode: 'python', // Specify the mode, e.g., 'python'
         theme: 'dreamweaver', // Specify the theme, e.g., 'monokai'
@@ -54,11 +56,11 @@ export default {
             'Authentication-Token': token
           }
         });
-  
+
         if (!response.ok) {
           throw new Error('Failed to fetch assignment data');
         }
-  
+
         const data = await response.json();
         console.log(data, 'data')
         this.question = data[this.content.title][0].problem_statement;
@@ -69,7 +71,7 @@ export default {
     async fetchAssignmentTestCases() {
 
       try {
-        const token = localStorage.getItem('authToken'); 
+        const token = localStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -94,9 +96,40 @@ export default {
         this.errorMessage = error.message;
       }
     },
+    async fetchAlternateSolution() {
+      this.isAltSolLoading = true
+      try {
+        const response = await fetch(`/api/alter_sol/${this.content.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authentication-Token': localStorage.getItem('authToken') // Ensure the token is included
+          },
+          body: JSON.stringify({ code: this.code })
+        });
+        if (!response.ok) {
+          // Attempt to parse error response as JSON
+          let errorMessage = 'Unknown error';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.ErrorMsg || 'Failed to fetch alternate solution';
+          } catch (jsonError) {
+            // If JSON parsing fails, read raw response text
+            errorMessage = await response.text();
+          }
+          throw new Error(errorMessage);
+        }
+        const result = await response.json();
+        this.altSol = result.hint
+      } catch (error) {
+        this.errorMessage = error.message;
+      } finally {
+        this.isAltSolLoading = false
+      }
+    },
 
     async fetchHint() {
-      this.isLoading = true;
+      this.isHintLoading = true;
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
@@ -112,14 +145,14 @@ export default {
 
         if (!response.ok) {
           throw new Error(`Failed to fetch hint`);
-      }
+        }
 
         const data = await response.json();
         this.hint = data.hint;
       } catch (error) {
         this.errorMessage = error.message;
-      }finally{
-        this.isLoading=false;
+      } finally {
+        this.isHintLoading = false;
       }
     },
     updateAnswer(answer) {
@@ -248,7 +281,6 @@ export default {
     // Fetch assignment data and hint when component is mounted
     this.fetchAssignmentData();
     this.fetchAssignmentTestCases();
-    // this.fetchHint();
 
     // Initialize Ace Editor when component is mounted
     this.$nextTick(() => {
@@ -262,7 +294,7 @@ export default {
         <div style="margin-left: 20px; margin-bottom: 20px;" v-if="deadline">Due date: {{ deadline.toLocaleString() }}</div>
         <div style="margin-left: 20px; margin-bottom: 20px;" v-if="showPrivateCases">Private Test Cases Passed: {{ privateCasesMarksObtained }} / {{ privateCasesTotalMarks }}</div>
       </div>
-      <div style="margin-left: 20px;">{{ question }}</div>
+      <div style="margin-left: 20px;"> <pre>{{ question }} </pre></div>
       <div style="color: red; margin-left: 20px;">This assignment has public test cases. Please click on "Test Run" button to see the status of public test cases. Assignment will be evaluated only after submitting using "Submit" button below. If you only test run the program, your assignment will not be graded and you will not see your score after the deadline.</div>
       <div style="margin-left: 20px;">
         Choose Language:
@@ -283,7 +315,7 @@ export default {
     <span v-if="showPublicCases"> Public Test Cases Passed: {{ publicCasesMarksObtained }} / {{ publicCasesTotalMarks }} </span>
     </div>
 
-    <div v-for="(testCase, index) in testCases" :key="index" class="test-case-row">
+    <div v-if='!testCase.is_private' v-for="(testCase, index) in testCases" :key="index" class="test-case-row">
       <div class="test-case-column">
         <strong>Input:</strong>
         <pre>{{ testCase.input }}</pre>
@@ -301,18 +333,25 @@ export default {
       <!-- Get Hint -->
       <div>
       <button @click="fetchHint" class="btn btn-primary mt-3">Get Hint</button>
-        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
-          Generating your hint...
+      <button @click="fetchAlternateSolution" class="btn btn-primary mt-3">Alternate Solution</button>
+        <div v-if="isHintLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your hint...<div class="spinner"></div>
         </div>
         <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
           Hint: {{ hint }}
+        </div>
+        <div v-if="isAltSolLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your alternate solution...<div class="spinner"></div>
+        </div>
+        <div v-if="altSol" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
+          Alternate Solution: {{ altSol }}
         </div>
       </div>
       
 
       <!-- Submit button -->
       <div>
-        <button @click="() => {submitAssignment(); displayPrivateCasesResult();}" class="btn btn-primary mt-3">Submit Assignment</button>
+        <button @click="() => {displayPrivateCasesResult();}" class="btn btn-primary mt-3">Submit Assignment</button>
       </div>
     </div>
   `

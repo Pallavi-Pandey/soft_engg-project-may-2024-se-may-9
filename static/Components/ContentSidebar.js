@@ -4,10 +4,10 @@ export default {
       <ul class="nav flex-column mt-3">
         <!-- Headline Sections -->
         <li class="nav-item">
-          <span class="nav-link" @click="selectItem('AboutCourse')">Course Introduction</span>
+          <span class="nav-link" @click="selectItem(0, { 'type': 'about_course' }, 'AboutCourse')">Course Introduction</span>
         </li>
         <li class="nav-item">
-          <span class="nav-link" @click="selectItem('AboutCourse')">About the Course</span>
+          <span class="nav-link" @click="selectItem(0, { 'type': 'about_course' }, 'AboutCourse')">About the Course</span>
         </li>
 
         <li class="nav-item" v-for="(week, index) in weekList" :key="index">
@@ -31,7 +31,14 @@ export default {
               <span class="dropdown-item" @click="selectItem(week.id, content, 'ProgrammingAssignment')"
               v-if="content.type == 'programming_content_type'">{{ content.title }}</span>
             </li>
+            <li>
+              <span class="dropdown-item" @click="selectItem(week.id, { 'type': 'weekly_summary' }, 'SummaryContent')">
+              Week Summary</span>
+            </li>
           </ul>
+        </li>
+        <li class="nav-item">
+          <span class="nav-link" @click="selectItem(0, { 'type': 'course_summary' }, 'SummaryContent')">Course Summary</span>
         </li>
       </ul>
     </div>
