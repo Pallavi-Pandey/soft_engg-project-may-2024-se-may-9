@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Course API
   description: API for managing courses, weekly content, assignments, and related student interactions.
-  version: 1.0.0
+  version: 3.0.0
 
 paths:
   /home/{user_id}:
@@ -291,19 +291,52 @@ paths:
                             example: 1
                     
 
-  /summary/{course_id}/{week_id}:
+  /summary/course/{course_id}:
     get:
-      summary: Get Weekly Summary
-      description: Provides an AI-generated summary of a week. Along with a summary of all the lectures since the user last logged in
+      summary: Get Course Summary since Last Logged In
+      description: Proivded an AI-generated summary of the lecutres of a course since the user last logged in.
       tags:
-        - Lecture Summary
+        - AI Generated Summary
       parameters:
+        - in: header
+          name: Authentication-Token
+          schema:
+            type: string
+          required: true
         - in: path
           name: course_id
           schema:
             type: integer
           required: true
           description: The ID of the course
+      responses:
+        '200':
+          description: AI-generated summary of the week
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: This is the combined summary of Entire Week.
+        '404':
+          description: No Course/Week/Module/Transcript found for the Course.
+        '500':
+          description: Something went Wrong
+
+  /summary/week/{week_id}:  
+    get:
+      summary: Get Weekly Summary
+      description: Provides an AI-generated summary of a week.
+      tags:
+        - AI Generated Summary
+      parameters:
+        - in: header
+          name: Authentication-Token
+          schema:
+            type: string
+          required: true
         - in: path
           name: week_id
           schema:
@@ -316,30 +349,30 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: This is a summary for the week 1
-
-  /summary/{course_id}/{week_id}/{video_id}:
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: This is the combined summary of the Module.
+        '404':
+          description: No Week/Module/Transcript found for the week.
+        '500':
+          description: Something went Wrong
+          
+  /summary/module/{content_id}:
     get:
       summary: Get Lecture Summary
       description: Provides an AI-generated summary of a specific lecture.
       tags:
-        - Lecture Summary
+        - AI Generated Summary
       parameters:
-        - in: path
-          name: course_id
+        - in: header
+          name: Authentication-Token
           schema:
-            type: integer
+            type: string
           required: true
-          description: The ID of the course
         - in: path
-          name: week_id
-          schema:
-            type: integer
-          required: true
-          description: The ID of the week
-        - in: path
-          name: video_id
+          name: content_id
           schema:
             type: integer
           required: true
@@ -350,8 +383,16 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: This is a summary of video lecture 1
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: This is a summary of video lecture 1
+        '404':
+          description: For the specified cotnent_id either the module or the transcript of the module does not exist.
+        '500':
+          description: Something went Wrong
+
 
   /mock_assignment/{course_id}/{week_id}/{assignment_type}:
     get:
@@ -519,38 +560,56 @@ paths:
                   type: string
                   example: topics
 
-  /prog_hint/{course_id}/{week_id}/{assignment_id}/{question_id}:
-    post:
-      summary: Get Programming Hints
-      description: Provides hints based on the user's submitted code.
+  /program_hint/{assignment_id}:
+    get:
+      summary: Programming Assignment Hints
+      description: AI provides hints for the Programming assignment.
       tags:
         - Programming Assistant
       parameters:
-        - in: path
-          name: course_id
+        - in: header
+          name: Authentication-Token
           schema:
-            type: integer
+            type: string
           required: true
-          description: The ID of the course
-        - in: path
-          name: week_id
-          schema:
-            type: integer
-          required: true
-          description: The ID of the week
         - in: path
           name: assignment_id
           schema:
             type: integer
           required: true
           description: The ID of the assignment
+      responses:
+        '200':
+          description: Hints to solve the assignment.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: Try to solve the problem using Greedy approach.
+        '404':
+          description: Programming Assignment not found.
+        '500':
+          description: Something went Wrong
+    post:
+      summary: Get hints for the errors in the code.
+      description: AI review and provides any help if the program has some errors.
+      tags:
+        - Programming Assistant
+      parameters:
+        - in: header
+          name: Authentication-Token
+          schema:
+            type: string
+          required: true
         - in: path
-          name: question_id
+          name: assignment_id
           schema:
             type: integer
           required: true
-          description: The ID of the question
-      
+          description: The ID of the assignment
       requestBody:
         required: true
         content:
@@ -560,51 +619,62 @@ paths:
               properties:
                 code:
                   type: string
+                  example: "def minElem(nums):\npass"
       responses:
         '200':
           description: Hints based on the submitted code
           content:
             application/json:
               schema:
-                type: string
-                example: Hint to solve question/rectify error
-
-  /alter_sol/{course_id}/{week_id}/{assignment_id}/{question_id}:
-    get:
-      summary: Get Alternative Solutions
-      description: Provides AI-generated alternative solutions for a programming assignment.
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: Replace the pass keyword with your logic.
+        '404':
+          description: Programming Assignment not found.
+        '500':
+          description: Something went Wrong
+  /alter_sol/{assignment_id}:
+    post:
+      summary: Review and provide if better solution exist.
+      description: Provides AI-generated alternative solutions for a programming assignment for the submitted code.
       tags:
         - Programming Assistant
       parameters:
-        - in: path
-          name: course_id
+        - in: header
+          name: Authentication-Token
           schema:
-            type: integer
+            type: string
           required: true
-          description: The ID of the course
-        - in: path
-          name: week_id
-          schema:
-            type: integer
-          required: true
-          description: The ID of the week
         - in: path
           name: assignment_id
           schema:
             type: integer
           required: true
           description: The ID of the assignment
-        - in: path
-          name: question_id
-          schema:
-            type: integer
-          required: true
-          description: The ID of the question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "def minElem(nums):\nreturn min(nums)"
       responses:
         '200':
           description: AI-generated alternative solutions
           content:
             application/json:
               schema:
-                type: string
-                example: Alternative Solution
+                type: object
+                properties:
+                  hint:
+                    type: string
+                    example: You have already written the best solution.
+        '404':
+          description: Programming Assignment not found.
+        '500':
+          description: Something went Wrong
