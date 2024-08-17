@@ -22,7 +22,7 @@ elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
     # Cygwin (POSIX compatibility layer for Windows) or MSYS (Git Bash)
     .env/Scripts/activate.bat
 else
-    echo "Unsupported operating system. Please activate the virtual environment manually."
+    echo "Unsupported operating system. Please activate the virtual environment manually and install the modules from the requirements.txt file."
     exit 1
 fi
 
