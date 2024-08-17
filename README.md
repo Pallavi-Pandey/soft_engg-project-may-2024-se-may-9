@@ -12,32 +12,11 @@ Provide a valid Google Gemini API key. It will start the app in the development 
 
 # Folder Structure
 
-- `db_directory` has the sqlite DB. It can be anywhere on the machine. Adjust the path in ``application/config.py`. Repo ships with one required for testing.
-- `application` is where our application code is
-- `.gitignore` - ignore file
-- `setup.sh` set up the virtualenv inside a local `.env` folder.
-- `local_run.sh`  Used to run the flask application in development mode
-- `static` - default `static` files folder. It serves at '/static' path. More about it is [here](https://flask.palletsprojects.com/en/2.0.x/tutorial/static/).
-- `templates` - Default flask templates folder
-
-# Basic skeleton
-```
-soft_engg-project-may-2024-se-may-9
-│   .gitignore
-│   local_run.sh
-│   local_setup.sh
-│   main.py
-│   README.md
-│   requirements.txt
-│
-├───application
-│   │   api.py
-│   │   config.py
-│   │   controllers.py
-│   │   database.py
-│   │
-│   └───models
-├───db_directory
-├───static
-└───templates
-```
+- `application` stores all the application logic.
+- `db_directory` stores the sqlite database file.
+- `local_data` - stores the Transcript files of the video lectures in `pdf` format.
+- `static` - stores all the `css` and `javascripts` files.
+- `templates` - stores the `html` file.
+- `api.yaml` - stores the the api design.
+- `loca_setup.sh` set up the virtualenv inside a local `.env` folder.
+- `local_run.sh`  Used to run the flask application in development mode.
