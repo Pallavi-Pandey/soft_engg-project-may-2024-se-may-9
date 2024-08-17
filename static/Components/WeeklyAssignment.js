@@ -93,21 +93,22 @@ export default {
     async submitAssignmentAnswers() {
       try {
         // Prepare the payload
-        console.log(this.answers, "answers")
         const answersArray = Object.keys(this.answers).map(question_id => ({
-          question_id,
+          question_id: parseInt(question_id), // Ensure question_id is an integer
           option_id: this.answers[question_id].option_id
         }));
-        console.log(answersArray, "answersArray")
-
-        const response = await fetch(`/api/course_assignment/${this.weekId}/${this.content.id}`, {
-          method: 'POST',
+    
+        console.log(answersArray, "answersArray");
+    
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authentication-Token': localStorage.getItem('authToken') // Ensure the token is included
           },
-          body: JSON.stringify(this.answers) // Sending the array of answers directly
+          body: JSON.stringify(answersArray) // Sending the array of answers directly
         });
+    
         if (!response.ok) {
           // Attempt to parse error response as JSON
           let errorMessage = 'Unknown error';
@@ -120,10 +121,11 @@ export default {
           }
           throw new Error(errorMessage);
         }
+    
         const result = await response.json();
         this.successMessage = result.message || 'Assignment submitted successfully!'; // Capture success message
         console.log('Assignment submitted:', result);
-
+    
         // Optionally clear the answers or redirect the user
         this.answers = {};
       } catch (error) {
@@ -131,6 +133,7 @@ export default {
         console.error('Error submitting assignment:', error); // Log the full error for debugging
       }
     }
+    
     
     
     
