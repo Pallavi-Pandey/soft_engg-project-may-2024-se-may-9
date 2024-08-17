@@ -23,6 +23,7 @@ elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
     .env/Scripts/activate.bat
 else
     echo "Unsupported operating system. Please activate the virtual environment manually. Install the modules from the requirements.txt file, create an environment variable 'GOOGLE_API_KEY' with your Gemini API Key then run the 'main.py'. "
+    exit 1
 fi
 
 # Set environment variable (you can customize this)
