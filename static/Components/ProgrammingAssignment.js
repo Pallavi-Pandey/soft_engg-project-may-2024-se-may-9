@@ -9,10 +9,7 @@ export default {
       default: 2
     },
     content: {
-      type: Object,
-      default: {
-        id: 2
-      }
+      type: Object
     }
   },
   data() {
@@ -45,6 +42,7 @@ export default {
       publicCasesTotalMarks: 0,
       showPrivateCases: false,
       showPublicCases: false,
+      assignmentId: 17
     };
   },
   computed: {
@@ -222,6 +220,7 @@ export default {
     },
     async submitAssignment() {
       console.log(this.code);
+      console.log(this.answers)
       try {
         const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'PUT',
@@ -299,7 +298,6 @@ export default {
               this.publicCasesMarksObtained += 1
             }
           }
-
           i++
         }
 

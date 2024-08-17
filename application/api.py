@@ -460,6 +460,7 @@ class WeeklyAssignmentResource(Resource):
             deadline = deadline_query.deadline
                 
             if deadline < datetime.now():
+                print(f"404 Error: Deadline passed for assignment - Assignment ID: {assignment_id}, Deadline: {deadline}")
                 abort(404, message='Deadline has passed for this assignment')
 
         # querying through the questions and student marked options
@@ -474,9 +475,11 @@ class WeeklyAssignmentResource(Resource):
 
             # aborting if either the question_id or option_id is invalid
             if not question:
+                print(f"404 Error: Question not found - Question ID: {question_id}")
                 abort(404, message='Question not found. Please ensure all question_id are valid')
 
             if option_id not in option_list:
+                print(f"404 Error: Option not found - Option ID: {option_id}, Question ID: {question_id}")
                 abort(404, message='Option not found. Please ensure all option_id are valid')
 
             # correct option for the current question
