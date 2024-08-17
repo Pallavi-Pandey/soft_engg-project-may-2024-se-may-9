@@ -49,6 +49,7 @@ export default {
           this.answers[questionId] = 0;
         }
       } catch (error) {
+        console.log(error)
         this.errorMessage = error.message;
       }
     },
@@ -103,25 +104,36 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authentication-Token': localStorage.getItem('authToken')
+            'Authentication-Token': localStorage.getItem('authToken') // Ensure the token is included
           },
-          body: JSON.stringify({ answers: answersArray })
+          body: JSON.stringify(this.answers) // Sending the array of answers directly
         });
-
         if (!response.ok) {
-          throw new Error('Failed to submit assignment answers');
+          // Attempt to parse error response as JSON
+          let errorMessage = 'Unknown error';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.ErrorMsg || 'Failed to submit assignment answers';
+          } catch (jsonError) {
+            // If JSON parsing fails, read raw response text
+            errorMessage = await response.text();
+          }
+          throw new Error(errorMessage);
         }
-
         const result = await response.json();
-        this.successMessage = result; // Success message from the API
+        this.successMessage = result.message || 'Assignment submitted successfully!'; // Capture success message
         console.log('Assignment submitted:', result);
 
         // Optionally clear the answers or redirect the user
         this.answers = {};
       } catch (error) {
-        this.errorMessage = error.message;
+        this.errorMessage = error.message; // Handle and display error message
+        console.error('Error submitting assignment:', error); // Log the full error for debugging
       }
     }
+    
+    
+    
 
   },
   created() {

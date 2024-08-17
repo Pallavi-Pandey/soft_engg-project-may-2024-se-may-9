@@ -25,7 +25,7 @@ export default {
         <h4>Question {{ index + 1 }}:</h4>
         <p>{{ question.question_text }} ({{question.question_score }} points)</p>
         <div v-for="option in question.options" :key="option.option_id" class="option">
-          <input 
+            <input 
             type="radio" 
             :id="option.option_id" 
             :name="'question-' + question.question_id" 
@@ -34,7 +34,7 @@ export default {
           />
           <label :for="option.option_id">{{ option.option_text }}</label>
         </div>
-      </div>
+    </div>
     `,
     style: `
       .question-container {

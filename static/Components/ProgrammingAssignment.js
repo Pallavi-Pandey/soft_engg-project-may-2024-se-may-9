@@ -9,7 +9,10 @@ export default {
       default: 2
     },
     content: {
-      type: Object
+      type: Object,
+      default:{
+        id:2
+      }
     }
   },
   data() {
@@ -22,6 +25,7 @@ export default {
       options: ["Python3"],
       selectedLanguage: '', // Define selectedLanguage in the data object
       code: '', // This will hold the content of the Ace Editor
+      isLoading: false,
       hint: '', // This will store the hint from the API
       editorOptions: {
         mode: 'python', // Specify the mode, e.g., 'python'
@@ -41,7 +45,6 @@ export default {
   },
   methods: {
     async fetchAssignmentData() {
-
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
@@ -53,9 +56,11 @@ export default {
             'Authentication-Token': token
           }
         });
+  
         if (!response.ok) {
           throw new Error('Failed to fetch assignment data');
         }
+  
         const data = await response.json();
         console.log(data, 'data')
         this.question = data[this.content.title][0].problem_statement;
@@ -66,7 +71,7 @@ export default {
     async fetchAssignmentTestCases() {
 
       try {
-        const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
+        const token = localStorage.getItem('authToken'); 
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -91,7 +96,9 @@ export default {
         this.errorMessage = error.message;
       }
     },
+
     async fetchHint() {
+      this.isLoading = true;
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
@@ -106,13 +113,15 @@ export default {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch hint');
-        }
+          throw new Error(`Failed to fetch hint`);
+      }
 
         const data = await response.json();
         this.hint = data.hint;
       } catch (error) {
         this.errorMessage = error.message;
+      }finally{
+        this.isLoading=false;
       }
     },
     updateAnswer(answer) {
@@ -291,10 +300,17 @@ export default {
       </div>
     </div>
 
-      <!-- Display Hint -->
-      <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
-        Hint: {{ hint }}
+      <!-- Get Hint -->
+      <div>
+      <button @click="fetchHint" class="btn btn-primary mt-3">Get Hint</button>
+        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your hint...
+        </div>
+        <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
+          Hint: {{ hint }}
+        </div>
       </div>
+      
 
       <!-- Submit button -->
       <div>

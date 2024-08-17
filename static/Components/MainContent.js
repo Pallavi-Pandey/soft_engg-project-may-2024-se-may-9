@@ -14,8 +14,9 @@ export default {
             type: Object
         },
         weekId : {
-            required: true,
-            type: Number
+            // required: true,
+            type: Number,
+            default: 2
         },
     },
     components: {
@@ -35,6 +36,8 @@ export default {
         }
     },
     template: `
+    <div class="main-course-content">
         <component :is="componentToShow" :weekId="weekId" :content="content" />
+    </div>
     `
 };
