@@ -1,4 +1,3 @@
-// ParentComponent.js
 import QuestionComponent from './QuestionComponent.js';
 
 export default {
@@ -27,7 +26,9 @@ export default {
       marksObtained: 0,
       totalMarks:0,
       successMessage: "",
-      isSubmitted: false
+      isSubmitted: false,
+      loading: false, // To track if questions are being generated
+      questionsGenerated: false, // To check if questions have been generated
     };
   },
   methods: {
@@ -163,12 +164,59 @@ export default {
         this.errorMessage = error.message; // Handle and display error message
         console.error('Error submitting assignment:', error); // Log the full error for debugging
       }
+    },
+    async generateMockAssignmentQuestions(courseId, weekId, assignmentType) {
+      this.loading = true;
+      this.questionsGenerated = false;
+      try {
+        const response = await fetch(`/mock_assignment/${courseId}/${weekId}/${assignmentType}`, {
+          method: 'GET',
+          headers: {
+            'Authentication-Token': localStorage.getItem('authToken')
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate mock assignment questions');
+        }
+
+        const mockQuestions = await response.json();
+        console.log('Generated Mock Questions:', mockQuestions);
+
+        // Process the mock questions to be used in your QuestionComponent
+        this.questions = mockQuestions.map((question, index) => ({
+          question_id: index + 1, // Assign a unique question ID
+          question_text: question.question_text,
+          options: question.options.map((option, idx) => ({
+            option_id: idx + 1, // Assign a unique option ID
+            option_text: option
+          })),
+          answer_id: null // Placeholder for the correct answer, if needed
+        }));
+
+        // Initialize answers object
+        this.answers = {};
+        this.questions.forEach(question => {
+          this.answers[question.question_id] = {
+            option_id: null
+          };
+        });
+
+        console.log('Questions processed for display:', this.questions);
+
+        this.questionsGenerated = true; // Questions have been generated
+      } catch (error) {
+        this.errorMessage = error.message;
+        console.error('Error generating mock assignment questions:', error);
+      } finally {
+        this.loading = false;
+      }
     }
     ,
     async onLoadData() {
       await this.fetchAssignmentData();
       await this.fetchAssignmentAnswersData();
-    }
+    },
   },
   created() {
     this.onLoadData()
@@ -180,7 +228,7 @@ export default {
     <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
     <!-- Display the assignment score only if it is submitted -->
-    <div v-if="isSubmitted" class="alert alert-info">
+    <div v-if="isSubmitted" class="alert alert-success">
       Assignment Score: {{ marksObtained }}
     </div>
 
@@ -191,16 +239,7 @@ export default {
         :selectedOptionId="answers[question.question_id]?.option_id"
         @answer-selected="handleAnswerSelected" 
       />
-      <div v-if="checkFlag">
-        <span 
-          :class="{
-            'text-danger': question.answer_id != answers[question.question_id]?.option_id,
-            'text-success': question.answer_id == answers[question.question_id]?.option_id
-          }"
-        >
-          Answer: {{ question.answer }}
-        </span>
-      </div>
+      
       <br />
     </div>
 
@@ -211,18 +250,39 @@ export default {
     <button 
       v-if="content.type == 'graded_assignment_content_type'" 
       @click="submitAssignmentAnswers()" 
-      class="btn btn-primary mt-3"
-    >
+      class="btn btn-primary mt-3">
       Submit Answers
     </button>
     <button 
       v-if="content.type == 'assignment_content_type'" 
       @click="() => { checkAnswers(); submitAssignmentAnswers(); }" 
-      class="btn btn-primary mt-3"
-    >
+      class="btn btn-primary mt-3">
       Check Answers
     </button>
     <br />
+    <button 
+      v-if="!questionsGenerated && !loading" 
+      @click="generateMockAssignmentQuestions(courseId, weekId, content.type)" 
+      class="btn btn-primary mt-3">
+      Generate Questions
+    </button>
+
+    <!-- Display loading message while questions are being generated -->
+    <div v-if="loading" class="alert alert-info">
+      Generating Questions...
+    </div>
+
+    <!-- Display the questions once they are generated -->
+    <div v-if="questionsGenerated">
+      <div v-for="(question, index) in questions" :key="question.question_id">
+        <QuestionComponent 
+          :question="question" 
+          :index="index" 
+          :selectedOptionId="answers[question.question_id]?.option_id"
+          @answer-selected="handleAnswerSelected" 
+        />
+      </div>
+    </div>
   </div>
 
 `
