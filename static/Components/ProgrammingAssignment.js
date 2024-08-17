@@ -337,13 +337,13 @@ export default {
       <button @click="fetchHint" class="btn btn-primary mt-3">Get Hint</button>
       <button @click="fetchAlternateSolution" class="btn btn-primary mt-3">Alternate Solution</button>
         <div v-if="isHintLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
-          Generating your hint...
+          Generating your hint...<div class="spinner"></div>
         </div>
         <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
           Hint: {{ hint }}
         </div>
         <div v-if="isAltSolLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
-          Generating your alternate solution...
+          Generating your alternate solution...<div class="spinner"></div>
         </div>
         <div v-if="altSol" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
           Alternate Solution: {{ altSol }}

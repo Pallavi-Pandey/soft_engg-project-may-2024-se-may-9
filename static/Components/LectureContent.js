@@ -34,12 +34,14 @@ export default {
         </iframe>
         <br>
         <button @click="generateSummary" class="btn btn-primary me-2">Generate Summary</button>
-        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
-          Generating your summary...
+        <div v-if="isLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange; display: flex; align-items: center;">
+            Generating your summary...<div class="spinner"></div>
         </div>
         <div v-if="summary" class="mt-3">
-            <h3>Lecture Summary</h3>        
+            <h3>Lecture Summary</h3>
+            <hr>        
             <div v-html="renderedContent"></div>
+            <hr>
         </div>
         <div v-if="errorMessage" class="alert alert-danger mt-3">
             {{ errorMessage }}
