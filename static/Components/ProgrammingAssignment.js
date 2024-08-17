@@ -9,10 +9,7 @@ export default {
       default: 2
     },
     content: {
-      type: Object,
-      default:{
-        id:2
-      }
+      type: Object
     }
   },
   data() {
@@ -41,6 +38,7 @@ export default {
       publicCasesTotalMarks: 0,
       showPrivateCases: false,
       showPublicCases: false,
+      assignmentId: 17
     };
   },
   methods: {
@@ -105,7 +103,7 @@ export default {
           throw new Error('No authentication token found');
         }
 
-        const response = await fetch(`/api/program_hint/${this.assignmentId}`, {
+        const response = await fetch(`/api/program_hint/${this.content.id}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': token // Use the token from localStorage
@@ -211,7 +209,6 @@ export default {
               this.publicCasesMarksObtained += 1
             }
           }
-
           i++
         }
 
