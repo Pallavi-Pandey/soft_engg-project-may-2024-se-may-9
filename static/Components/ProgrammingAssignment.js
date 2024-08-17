@@ -26,8 +26,10 @@ export default {
       selectedLanguage: '', // Define selectedLanguage in the data object
       code: '', // This will hold the content of the Ace Editor
       isHintLoading: false,
+      isCodeHintLoading: false,
       isAltSolLoading: false,
       hint: '', // This will store the hint from the API
+      codeHint: '',
       altSol: '',
       editorOptions: {
         mode: 'python', // Specify the mode, e.g., 'python'
@@ -44,6 +46,17 @@ export default {
       showPrivateCases: false,
       showPublicCases: false,
     };
+  },
+  computed: {
+    renderedHint() {
+      return this.renderMarkdown(this.hint);
+    },
+    renderedCodeHint() {
+      return this.renderMarkdown(this.codeHint);
+    },
+    renderedAltSol() {
+      return this.renderMarkdown(this.altSol);
+    }
   },
   methods: {
     async fetchAssignmentData() {
@@ -98,8 +111,15 @@ export default {
         this.errorMessage = error.message;
       }
     },
+    renderMarkdown(content) {
+      const md = window.markdownit();
+      return md.render(content);
+    },
     async fetchAlternateSolution() {
       this.isAltSolLoading = true
+      this.hint = ""
+      this.codeHint = ""
+      this.altSol = ""
       try {
         const response = await fetch(`/api/alter_sol/${this.content.id}`, {
           method: 'POST',
@@ -132,6 +152,9 @@ export default {
 
     async fetchHint() {
       this.isHintLoading = true;
+      this.hint = ""
+      this.codeHint = ""
+      this.altSol = ""
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
@@ -155,6 +178,38 @@ export default {
         this.errorMessage = error.message;
       } finally {
         this.isHintLoading = false;
+      }
+    },
+    async fetchCodeHint() {
+      this.isCodeHintLoading = true;
+      this.hint = ""
+      this.codeHint = ""
+      this.altSol = ""
+      try {
+        const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`/api/program_hint/${this.content.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authentication-Token': token // Use the token from localStorage
+          },
+          body: JSON.stringify({ code: this.code })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch code hint`);
+        }
+
+        const data = await response.json();
+        this.codeHint = data.hint;
+      } catch (error) {
+        this.errorMessage = error.message;
+      } finally {
+        this.isCodeHintLoading = false;
       }
     },
     updateAnswer(answer) {
@@ -335,18 +390,25 @@ export default {
       <!-- Get Hint -->
       <div>
       <button @click="fetchHint" class="btn btn-primary mt-3">Get Hint</button>
+      <button @click="fetchCodeHint" class="btn btn-primary mt-3">Get Code Hint</button>
       <button @click="fetchAlternateSolution" class="btn btn-primary mt-3">Alternate Solution</button>
         <div v-if="isHintLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
           Generating your hint...<div class="spinner"></div>
         </div>
         <div v-if="hint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
-          Hint: {{ hint }}
+          Hint: <div v-html="renderedHint"></div>
         </div>
         <div v-if="isAltSolLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
           Generating your alternate solution...<div class="spinner"></div>
         </div>
         <div v-if="altSol" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
-          Alternate Solution: {{ altSol }}
+          Alternate Solution: <div v-html="renderedAltSol"></div>
+        </div>
+        <div v-if="isCodeHintLoading" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkorange;">
+          Generating your code hint...<div class="spinner"></div>
+        </div>
+        <div v-if="codeHint" style="margin-left: 20px; margin-top: 20px; font-style: italic; color: darkgreen;">
+          Code hint: <div v-html="renderedCodeHint"></div>
         </div>
       </div>
       

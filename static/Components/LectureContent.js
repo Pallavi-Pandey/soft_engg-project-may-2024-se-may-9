@@ -39,10 +39,11 @@ export default {
         </div>
         <div v-if="summary" class="mt-3">
             <h3>Lecture Summary</h3>
-            <hr>        
+            <br>
+            <div class="summary-container">  
             <div v-html="renderedContent"></div>
-            <hr>
-        </div>
+            </div>
+        </div> 
         <div v-if="errorMessage" class="alert alert-danger mt-3">
             {{ errorMessage }}
         </div>
