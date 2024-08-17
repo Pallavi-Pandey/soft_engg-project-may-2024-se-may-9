@@ -132,6 +132,7 @@ export default {
     },
     async submitAssignment() {
       console.log(this.code);
+      console.log(this.answers)
       try {
         const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'PUT',
