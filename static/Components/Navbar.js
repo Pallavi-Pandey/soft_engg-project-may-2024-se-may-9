@@ -20,10 +20,10 @@ export default {
     template: `
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <router-link to="/home" class="link-primary">
                 <img src="https://upload.wikimedia.org/wikipedia/en/6/69/IIT_Madras_Logo.svg" alt="IIT Madras" height="40">
                 IIT Madras
-            </a>
+            </router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

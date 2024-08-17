@@ -14,8 +14,6 @@ a{
     width: calc(100/3);
 }
 
-<<<<<<< HEAD
-=======
 .course-cards-container {
     display: flex;
     justify-content: center; /* Center horizontally */
@@ -37,7 +35,6 @@ a{
 /* .fixed-sidebar{
     background-color: #49516C;
 } */
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
 
 nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     box-shadow: #49516C;
@@ -81,10 +78,9 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     background-color: #004494;
   }
 
-<<<<<<< HEAD
 
 
-  .question-container {
+.question-container {
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -125,8 +121,7 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
 .main-course-content{
     padding: 20px;
 }
-=======
-  .test-case-row {
+.test-case-row {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
@@ -137,4 +132,3 @@ nav > .navbar .navbar-expand-lg .navbar-light .bg-light{
     padding: 10px;
   }
   
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122

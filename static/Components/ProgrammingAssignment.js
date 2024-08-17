@@ -9,17 +9,16 @@ export default {
       default: 2
     },
     content: {
-      type: Object
+      type: Object,
+      default:{
+        id:2
+      }
     }
   },
   data() {
     return {
       assignmentTitle: '',
-<<<<<<< HEAD
-      question: `Question`,
-=======
       question: "",
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
       deadline: "2024-08-11",
       answers: [],
       errorMessage: '',
@@ -46,21 +45,12 @@ export default {
   },
   methods: {
     async fetchAssignmentData() {
-<<<<<<< HEAD
-=======
-
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
       try {
         const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
         if (!token) {
           throw new Error('No authentication token found');
         }
-<<<<<<< HEAD
-  
-        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
-=======
         const response = await fetch(`/api/course_assignment/1/${this.weekId}/${this.content.id}`, {
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
           method: 'GET',
           headers: {
             'Authentication-Token': token
@@ -72,20 +62,6 @@ export default {
         }
   
         const data = await response.json();
-<<<<<<< HEAD
-        console.log(data);
-  
-        // Assuming the response has a structure like: { "PPA 1 - Not Graded": [ { question_id: ..., question_text: ..., options: [...] } ] }
-        this.assignmentTitle = Object.keys(data)[0];
-        this.questions = data[this.assignmentTitle];
-        console.log(this.questions)
-        // Update the question and deadline based on the fetched data
-        if (this.questions && this.questions.length > 0) {
-          this.question = this.questions[0]['problem_statement']; // Assuming you want to display the first question
-          if (this.questions[0].deadline) {
-            this.deadline = new Date(this.questions[0].deadline);
-          }
-=======
         console.log(data, 'data')
         this.question = data[this.content.title][0].problem_statement;
       } catch (error) {
@@ -95,10 +71,9 @@ export default {
     async fetchAssignmentTestCases() {
 
       try {
-        const token = localStorage.getItem('authToken'); // Replace with your actual key for the token
+        const token = localStorage.getItem('authToken'); 
         if (!token) {
           throw new Error('No authentication token found');
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
         }
         const response = await fetch(`/api/programming_assignment_test_cases/${this.content.id}`, {
           method: 'GET',
@@ -274,13 +249,9 @@ export default {
   mounted() {
     // Fetch assignment data and hint when component is mounted
     this.fetchAssignmentData();
-<<<<<<< HEAD
-    
-=======
     this.fetchAssignmentTestCases();
     // this.fetchHint();
 
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
     // Initialize Ace Editor when component is mounted
     this.$nextTick(() => {
       this.createAceEditor();

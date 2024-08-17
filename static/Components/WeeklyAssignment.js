@@ -22,14 +22,10 @@ export default {
     return {
       questions: [],
       errorMessage: '',
-<<<<<<< HEAD
-      answers:[]
-=======
       answers: {},
       checkFlag: false,
       marksObtained: 0,
       totalMarks:0
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
     };
   },
   methods: {
@@ -77,15 +73,6 @@ export default {
     handleAnswerSelected({ question_id, option_id, option_text }) {
       // Handle the selected answer here (e.g., store it or send it to the server)
       console.log(`Question ID: ${question_id}, Selected Option ID: ${option_id}`);
-<<<<<<< HEAD
-      this.answers.push({question_id, option_id})
-    },
-    async submitAssignmentAnswers() {
-      try {
-        console.log(this.answers); // Log the payload for debugging
-    
-        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.assignmentId}`, {
-=======
       this.answers[question_id] = {
         option_id: option_id,
         option_text: option_text
@@ -114,7 +101,6 @@ export default {
         console.log(answersArray, "answersArray")
 
         const response = await fetch(`/api/course_assignment/${this.weekId}/${this.content.id}`, {
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -122,12 +108,6 @@ export default {
           },
           body: JSON.stringify(this.answers) // Sending the array of answers directly
         });
-<<<<<<< HEAD
-    
-        // Check if the response is not ok
-=======
-
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
         if (!response.ok) {
           // Attempt to parse error response as JSON
           let errorMessage = 'Unknown error';
@@ -140,24 +120,12 @@ export default {
           }
           throw new Error(errorMessage);
         }
-<<<<<<< HEAD
-    
-        // Parse the success response
-=======
-
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
         const result = await response.json();
         this.successMessage = result.message || 'Assignment submitted successfully!'; // Capture success message
         console.log('Assignment submitted:', result);
-<<<<<<< HEAD
-    
-        // Optionally clear the answers or redirect the user after submission
-        this.answers = [];
-=======
 
         // Optionally clear the answers or redirect the user
         this.answers = {};
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
       } catch (error) {
         this.errorMessage = error.message; // Handle and display error message
         console.error('Error submitting assignment:', error); // Log the full error for debugging
@@ -189,17 +157,12 @@ export default {
         </div>
         </br>
       </div>
-<<<<<<< HEAD
-      <button @click="submitAssignmentAnswers" class="btn btn-primary mt-3">Submit Answers</button>
-      <br>
-=======
       <div v-if="checkFlag">
       <span> Score: {{ marksObtained }} / {{ totalMarks }} </span>
       </div>
       <button v-if="this.content.type == 'graded_assignment_content_type'" @click="submitAssignmentAnswers()" class="btn btn-primary mt-3">Submit Answers</button>
       <button v-if="this.content.type == 'assignment_content_type'" @click="checkAnswers()" class="btn btn-primary mt-3">Check Answers</button>
       </br>
->>>>>>> 53bcc9e509dbf7ddb71ea0d500b41cccb87ad122
     </div>
   `
 };
