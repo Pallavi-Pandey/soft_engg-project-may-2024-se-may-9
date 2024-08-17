@@ -26,7 +26,8 @@ export default {
       checkFlag: false,
       marksObtained: 0,
       totalMarks:0,
-      successMessage: ""
+      successMessage: "",
+      isSubmitted: false
     };
   },
   methods: {
@@ -74,24 +75,27 @@ export default {
         if (!response.ok) {
           console.log('Failed to fetch assignment data');
         }
-        const data = await response.json();
-        console.log("Fetched Data:", data); // Log the fetched data to verify
-    
-        // Store the score if available
-        if (data.assingment_score) {
-          console.log("Assignment Score:", data.assingment_score); // Log the score
-          this.marksObtained = data.assingment_score;
+        else{
+          this.isSubmitted = true;
+          const data = await response.json();
+          console.log("Fetched Data:", data); // Log the fetched data to verify
+      
+          // Store the score if available
+          if (data.assingment_score) {
+            console.log("Assignment Score:", data.assingment_score); // Log the score
+            this.marksObtained = data.assingment_score;
+          }
+      
+          this.answers = {};
+          data?.["Student Marked Answers"].forEach((answer) => {
+            let dataObj = {
+              question_id: answer.question_id,
+              option_id: answer.marked_option_id,
+            };
+            this.handleAnswerSelected(dataObj);
+          });
+          console.log(this.answers, "answers");
         }
-    
-        this.answers = {};
-        data?.["Student Marked Answers"].forEach((answer) => {
-          let dataObj = {
-            question_id: answer.question_id,
-            option_id: answer.marked_option_id,
-          };
-          this.handleAnswerSelected(dataObj);
-        });
-        console.log(this.answers, "answers");
       } catch (error) {
         this.errorMessage = error.message;
       }
@@ -106,7 +110,6 @@ export default {
       console.log(this.answers)
     },
     checkAnswers() {
-      this.checkFlag = false
       this.checkFlag = true
       this.marksObtained = 0
       this.totalMarks = 0
@@ -175,12 +178,12 @@ export default {
     <h3>{{ content.title }}</h3>
     <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
     <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
-    
-    <!-- Display the assignment score -->
-    <div v-if="marksObtained" class="alert alert-info">
-      Assignment Score: {{ marksObtained }} 
+
+    <!-- Display the assignment score only if it is submitted -->
+    <div v-if="isSubmitted" class="alert alert-info">
+      Assignment Score: {{ marksObtained }}
     </div>
-    
+
     <div v-for="(question, index) in questions" :key="question.question_id">
       <QuestionComponent 
         :question="question" 
@@ -189,19 +192,38 @@ export default {
         @answer-selected="handleAnswerSelected" 
       />
       <div v-if="checkFlag">
-        <span v-if="question.answer_id != answers[question.question_id]?.option_id" style="color: red;">Answer: {{question.answer}}</span>
-        <span v-if="question.answer_id == answers[question.question_id]?.option_id" style="color: green;">Answer: {{question.answer}}</span>
+        <span 
+          :class="{
+            'text-danger': question.answer_id != answers[question.question_id]?.option_id,
+            'text-success': question.answer_id == answers[question.question_id]?.option_id
+          }"
+        >
+          Answer: {{ question.answer }}
+        </span>
       </div>
       <br />
     </div>
-    
+
     <div v-if="checkFlag">
       <span> Score: {{ marksObtained }} / {{ totalMarks }} </span>
     </div>
-    
-    <button v-if="content.type == 'graded_assignment_content_type'" @click="submitAssignmentAnswers()" class="btn btn-primary mt-3">Submit Answers</button>
-    <button v-if="content.type == 'assignment_content_type'" @click=" () => {checkAnswers(); submitAssignmentAnswers();}" class="btn btn-primary mt-3">Check Answers</button>
+
+    <button 
+      v-if="content.type == 'graded_assignment_content_type'" 
+      @click="submitAssignmentAnswers()" 
+      class="btn btn-primary mt-3"
+    >
+      Submit Answers
+    </button>
+    <button 
+      v-if="content.type == 'assignment_content_type'" 
+      @click="() => { checkAnswers(); submitAssignmentAnswers(); }" 
+      class="btn btn-primary mt-3"
+    >
+      Check Answers
+    </button>
     <br />
   </div>
+
 `
 };
