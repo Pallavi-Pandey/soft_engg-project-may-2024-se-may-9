@@ -3,6 +3,7 @@ import LectureContent from "./LectureContent.js";
 import WeeklyAssignment from "./WeeklyAssignment.js";
 import ProgrammingAssignment from "./ProgrammingAssignment.js";
 import SummaryContent from "./SummaryContent.js";
+import WeakConcepts from "./WeakConcepts.js";
 
 export default {
     props: {
@@ -30,7 +31,8 @@ export default {
         LectureContent,
         WeeklyAssignment,
         ProgrammingAssignment,
-        SummaryContent
+        SummaryContent,
+        WeakConcepts
     },
     computed: {
         componentToShow() {
@@ -39,7 +41,8 @@ export default {
                 LectureContent,
                 WeeklyAssignment,
                 ProgrammingAssignment,
-                SummaryContent
+                SummaryContent,
+                WeakConcepts
             }[this.currentComponent] || AboutCourse; // Fallback to AboutCourse
         }
     },

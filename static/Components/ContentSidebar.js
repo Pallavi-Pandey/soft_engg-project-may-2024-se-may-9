@@ -35,6 +35,10 @@ export default {
               <span class="dropdown-item" @click="selectItem(week.id, { 'type': 'weekly_summary' }, 'SummaryContent')">
               Week Summary</span>
             </li>
+            <li>
+              <span class="dropdown-item" @click="selectItem(week.id, { 'type': 'weak_concepts' }, 'WeakConcepts')">
+              Weak Concepts</span>
+            </li>
           </ul>
         </li>
         <li class="nav-item">
