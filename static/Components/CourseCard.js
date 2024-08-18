@@ -14,7 +14,7 @@ export default {
     methods: {
         async fetchCourseData(courseId) {
         try {
-            const response = await fetch(`/api/courses/${courseId}`, {
+            const response = await fetch(`/api/courses/${this.courseId}`, {
             method: 'GET',
             headers: {
                 'Authentication-Token': localStorage.getItem('authToken')
@@ -37,7 +37,7 @@ export default {
       this.fetchCourseData(this.courseId); // Fetch course data when the component is created
     },
     template: `
-    <router-link :to="'/course_page/3' ">
+    <router-link :to="\`/course_page/\${courseId}\`">
         <div class="card" style="margin: 0.4em .4em; width: calc(100/3);">
             <div class="image-wrapper" style="max-width:100%; height:19em">
             <img src="https://static.vecteezy.com/system/resources/thumbnails/008/962/785/small/abstract-red-circle-dots-wave-pattern-on-black-design-modern-technology-background-vector.jpg" class="card-img-top" alt="Product Image" style="max-width:100%; max-height:100%">

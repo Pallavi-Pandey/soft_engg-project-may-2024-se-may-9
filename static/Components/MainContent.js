@@ -19,6 +19,11 @@ export default {
             type: Number,
             default: 2
         },
+        courseId: {
+            // required: true,
+            type: Number,
+            default: 2
+        },
     },
     components: {
         AboutCourse,
@@ -40,7 +45,7 @@ export default {
     },
     template: `
     <div class="main-course-content">
-        <component :is="componentToShow" :weekId="weekId" :content="content" />
+        <component :is="componentToShow" :weekId="weekId" :content="content" :courseId="courseId"/>
     </div>
     `
 };

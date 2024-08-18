@@ -8,6 +8,10 @@ export default {
             required: true,
             type: Number
         },
+        courseId: {
+            required: true,
+            type: Number
+        },
     },
     data() {
         return {
@@ -59,7 +63,7 @@ export default {
                         },
                     });
                 } else if (this.content.type == "course_summary") {
-                    response = await fetch(`/api/summary/course/1`, {
+                    response = await fetch(`/api/summary/course/${this.courseId}`, {
                         method: 'GET',
                         headers: {
                             'Authentication-Token': localStorage.getItem('authToken'), // Replace with your actual authentication token

@@ -16,7 +16,8 @@ export default {
             courseTitle: '',  // Store the course title
             userEmail: '',  // Store the user email
             content: {},
-            weekId: null
+            weekId: null,
+            courseId: null
         };
     },
     methods: {
@@ -42,7 +43,7 @@ export default {
         },
         async fetchCourseTitle() {
             try {
-                const response = await fetch(`/api/courses/1`, {
+                const response = await fetch(`/api/courses/${this.courseId}`, {
                     headers: {
                         'Authentication-Token': localStorage.getItem('authToken')
                     }
@@ -66,6 +67,7 @@ export default {
         }
     },
     created() {
+        this.courseId = this.$route.path.split("/").pop();
         this.fetchUserEmail();  // Fetch user email when component is created
         this.fetchCourseTitle();  // Fetch course title when component is created
     },
@@ -75,9 +77,9 @@ export default {
         <Navbar :userEmail="userEmail" :courseTitle="courseTitle" />
         <div class="content-wrapper" style="display: flex;">
             <FixedSidebar />
-            <ContentSidebar @update-content="updateContent" />
+            <ContentSidebar @update-content="updateContent" :courseId="courseId"/>
             <MainContent :key="selectedComponent + content.id + weekId"
-            :currentComponent="selectedComponent" :weekId="weekId" :content="content" />
+            :currentComponent="selectedComponent" :weekId="weekId" :content="content" :courseId="courseId"/>
         </div>
     </div>
     `

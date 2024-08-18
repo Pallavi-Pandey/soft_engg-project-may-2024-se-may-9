@@ -43,9 +43,14 @@ export default {
       </ul>
     </div>
     `,
+  props: {
+    courseId: {
+      required: true,
+      type: Number
+    }
+  },
   data() {
     return {
-      courseId: 1,
       weekList: [],
     };
   },
@@ -100,7 +105,7 @@ export default {
               ...week,
               weekContent: data.Contents
             }
-            this.weekList.splice(i,1,weekData)
+            this.weekList.splice(i, 1, weekData)
             i++
           } else {
             console.error('Failed to fetch course details');

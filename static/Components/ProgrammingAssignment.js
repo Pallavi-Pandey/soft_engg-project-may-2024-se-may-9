@@ -63,7 +63,7 @@ export default {
         if (!token) {
           throw new Error('No authentication token found');
         }
-        const response = await fetch(`/api/course_assignment/1/${this.weekId}/${this.content.id}`, {
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': token

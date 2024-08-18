@@ -34,7 +34,7 @@ export default {
   methods: {
     async fetchAssignmentData() {
       try {
-        const response = await fetch(`/api/course_assignment/1/${this.weekId}/${this.content.id}`, {
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': localStorage.getItem('authToken')
@@ -67,7 +67,7 @@ export default {
     },
     async fetchAssignmentAnswersData() {
       try {
-        const response = await fetch(`/api/answers/1/${this.weekId}/${this.content.id}`, {
+        const response = await fetch(`/api/answers/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': localStorage.getItem('authToken')
@@ -132,7 +132,7 @@ export default {
     
         console.log(answersArray, "answersArray");
     
-        const response = await fetch(`/api/course_assignment/1/${this.weekId}/${this.content.id}`, {
+        const response = await fetch(`/api/course_assignment/${this.courseId}/${this.weekId}/${this.content.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default {
       this.loading = true;
       this.questionsGenerated = false;
       try {
-        const response = await fetch(`/mock_assignment/${courseId}/${weekId}/${assignmentType}`, {
+        const response = await fetch(`/mock_assignment/${this.courseId}/${this.weekId}/${this.assignmentType}`, {
           method: 'GET',
           headers: {
             'Authentication-Token': localStorage.getItem('authToken')
